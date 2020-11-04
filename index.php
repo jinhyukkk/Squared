@@ -27,6 +27,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/webtoon/detail', ['IndexController', 'episodeView']);
     $r->addRoute('GET', '/webtoon/finished', ['IndexController', 'finishedWebtoons']);
     $r->addRoute('GET', '/webtoon/new', ['IndexController', 'newWebtoons']);
+    $r->addRoute('POST', '/comment', ['IndexController', 'postComment']);
+    $r->addRoute('GET', '/comment', ['IndexController', 'getComment']);
+    $r->addRoute('DELETE', '/comment', ['IndexController', 'deleteComment']);
 
 
 //    $r->addRoute('GET', '/users', 'get_all_users_handler');
