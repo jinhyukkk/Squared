@@ -41,7 +41,6 @@
 //        return intval($res[0]["exist"]);
 //
 //    }
-
 ////READ
 //function getUserDetail($userIdx)
 //{
@@ -60,20 +59,7 @@
 //    return $res[0];
 //}
 //
-//INSERT
-//function createUser($ID, $pwd, $name)
-//{
-//    $pdo = pdoSqlConnect();
-//    $query = "INSERT INTO Users (ID, pwd, name) VALUES (?,?,?);";
-//
-//    $st = $pdo->prepare($query);
-//    $st->execute([$ID, $pwd, $name]);
-//
-//    $st = null;
-//    $pdo = null;
-//
-//}
-//
+
 
 //요일별 웹툰 업데이트순
 function getWebtoons_Update($keyword)
@@ -355,7 +341,7 @@ function getWebtoonDetail($webtoonIdx)
            when week = 'sun' then '일요웹툰' end as week,
        summary,
        IF(exists(select * from Interest where webtoonIdx=$webtoonIdx and userIdx=1 and isDeleted='N'), 'Y', 'N') as isInterested,
-       IF(exists(select * from Alarm where webtoonIdx=$webtoonIdx and userIdx=1 and isDeleted='N'), 'Y', 'N') as alarm
+       IF(exists(select * from Notice where webtoonIdx=$webtoonIdx and userIdx=1 and isDeleted='N'), 'Y', 'N') as Notice
 from Webtoon
 where webtoonIdx = $webtoonIdx;";
 
@@ -560,7 +546,7 @@ function getCommentUser($webtoonIdx, $episodeIdx, $userIdxToken)
        content,
        if(isnull(CL.countLike), 0, CL.countLike)        as upCount,
        if(isnull(CUL.countUnLike), 0, CUL.countUnLike)  as downCount,
-       CASE WHEN likeState = 'U' then 'up' when likeState = 'D' then 'down' else 'default' end as upDownState,
+       CASE WHEN likeState = 'L' then 'Like' when likeState = 'U' then 'unLike' else 'default' end as upDownState,
        IF(Comment.useridx = $userIdxToken, 'Y', 'N') as isUsers
 from Comment
          join Users on Users.userIdx = Comment.userIdx
@@ -641,4 +627,362 @@ function deleteComment($webtoonIdx, $episodeIdx, $commentIdx, $userIdxToken){
     $st->execute([$webtoonIdx, $episodeIdx, $commentIdx, $userIdxToken]);
     $st = null;
     $pdo = null;
+}
+// 이미 존재하는 UnLike
+function isValidCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from CommentLike where userIdx = $userIdxToken 
+                                and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx and commentIdx = $commentIdx
+                                and isDeleted = 'N' and likeState = 'U') AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+
+// 이미 존재하는 Like
+function isValidCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from CommentLike where userIdx = $userIdxToken 
+                                and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx and commentIdx = $commentIdx
+                                and isDeleted = 'N' and likeState = 'L') AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+
+// 존재하는 Like
+function isExistsCommentLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from CommentLike where userIdx = $userIdxToken 
+                                and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx and commentIdx = $commentIdx and likeState = 'L') AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+// 존재하는 UnLike
+function isExistsCommentUnLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from CommentLike where userIdx = $userIdxToken 
+                                and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx and commentIdx = $commentIdx and likeState = 'U') AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+
+//댓글 좋아요 등록
+function registerCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO CommentLike (webtoonIdx, episodeIdx, commentIdx, userIdx, likeState) 
+                    VALUES ($webtoonIdx, $episodeIdx, $commentIdx, $userIdxToken, 'L');";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
+//댓글 싫어요 등록
+function registerCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO CommentLike (webtoonIdx, episodeIdx, commentIdx, userIdx, likeState) 
+                    VALUES ($webtoonIdx, $episodeIdx, $commentIdx, $userIdxToken, 'U');";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
+//현재 좋아요 상태
+function currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select IF(isDeleted='Y', '좋아요 취소', '좋아요') AS state from CommentLike where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx 
+                                                and episodeIdx = $episodeIdx and commentIdx = $commentIdx and likeState = 'L';";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]["state"];
+}
+
+//현재 싫어요 상태
+function currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select IF(isDeleted='Y', '싫어요 취소', '싫어요') AS state from CommentLike where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx 
+                                                and episodeIdx = $episodeIdx and commentIdx = $commentIdx and likeState = 'U';";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]["state"];
+}
+
+//댓글 좋아요 수정
+function modifyCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE CommentLike SET isDeleted = if(isDeleted = 'Y', 'N','Y') 
+                        where webtoonIdx = $webtoonIdx and episodeIdx=$episodeIdx and userIdx =$userIdxToken and commentIdx=$commentIdx and likeState = 'L';";
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    $st = null;
+    $pdo = null;
+}
+
+//댓글 싫어요 수정
+function modifyCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE CommentLike SET isDeleted = if(isDeleted = 'Y', 'N','Y') 
+                        where webtoonIdx = $webtoonIdx and episodeIdx=$episodeIdx and userIdx =$userIdxToken and commentIdx=$commentIdx and likeState = 'U';";
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx]);
+    $st = null;
+    $pdo = null;
+}
+
+// 존재하는 heart
+function isExistsHeart($userIdxToken, $webtoonIdx, $episodeIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from Heart where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx) AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+
+//heart 등록
+function registerHeart($userIdxToken, $webtoonIdx, $episodeIdx){
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Heart (webtoonIdx, episodeIdx, userIdx) VALUES ($webtoonIdx, $episodeIdx, $userIdxToken);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+
+    $st = null;
+    $pdo = null;
+
+}
+
+//현재 하트 상태
+function currentHeartStatus($userIdxToken, $webtoonIdx, $episodeIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select IF(isDeleted='Y', '취소되었습니다.', '하트 등록') AS state from Heart 
+                where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]["state"];
+}
+
+//하트 수정
+function modifyHeart($userIdxToken, $webtoonIdx, $episodeIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Heart SET isDeleted = if(isDeleted = 'Y', 'N','Y') 
+                        where webtoonIdx = $webtoonIdx and episodeIdx=$episodeIdx and userIdx =$userIdxToken;";
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+    $st = null;
+    $pdo = null;
+}
+// 존재하는 Interest
+function isExistsInterest($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from Interest where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx) AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+//Interest 등록
+function registInterest($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Interest (webtoonIdx, userIdx) VALUES ($webtoonIdx, $userIdxToken);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+
+    $st = null;
+    $pdo = null;
+
+    return "관심 등록";
+}
+//Notice 등록
+function registNotice($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO Notice (webtoonIdx, userIdx) VALUES ($webtoonIdx, $userIdxToken);";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+
+    $st = null;
+    $pdo = null;
+
+}
+//현재 관심 상태
+function currentInterestStatus($userIdxToken, $webtoonIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select IF(isDeleted='Y', '관심웹툰이 해제되었습니다.', '관심웹툰으로 등록되었어요. 새롭게 생겼거나, 놓치고 계신 무료 회차 알림을 드려요.') AS state from Interest 
+                where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]["state"];
+}
+//관심 수정
+function modifyInterest($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Interest as I, Notice as A
+SET I.isDeleted = if(I.isDeleted = 'Y', 'N', 'Y'),
+    A.isDeleted = I.isDeleted
+where I.webtoonIdx = $webtoonIdx
+  and I.userIdx = $userIdxToken
+  and A.webtoonIdx = $webtoonIdx
+  and A.userIdx = $userIdxToken;";
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    $st = null;
+    $pdo = null;
+}
+// 등록되어있는 Interest
+function isValidInterest($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from Interest where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx and isDeleted = 'N') AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+// 존재하는 Notice
+function isExistsNotice($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from Notice where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx) AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+//알림 수정
+function modifyNotice($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Notice SET isDeleted = if(isDeleted = 'Y', 'N', 'Y')
+                    where webtoonIdx = $webtoonIdx and userIdx = $userIdxToken;";
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    $st = null;
+    $pdo = null;
+}
+//현재 알림 상태
+function currentNoticeStatus($userIdxToken, $webtoonIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select IF(isDeleted='Y', '알림 해제', '알림 등록') AS state from Notice 
+                where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]["state"];
 }

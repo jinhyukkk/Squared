@@ -30,7 +30,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/comment', ['IndexController', 'postComment']);
     $r->addRoute('GET', '/comment', ['IndexController', 'getComment']);
     $r->addRoute('DELETE', '/comment', ['IndexController', 'deleteComment']);
-
+    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/like', ['IndexController', 'commentLike']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/unLike', ['IndexController', 'commentUnLike']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/heart', ['IndexController', 'episodeHeart']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/interest', ['IndexController', 'registInterest']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/notice', ['IndexController', 'registNotice']);
 
 //    $r->addRoute('GET', '/users', 'get_all_users_handler');
 //    // {id} must be a number (\d+)

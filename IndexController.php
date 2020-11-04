@@ -274,7 +274,7 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-
+            $res->result = new stdClass();
             $res->result->thumbnailUrl = getWebtoonDetail($webtoonIdx)["subThumbnailUrl"];
             $res->result->color = getWebtoonDetail($webtoonIdx)["color"];
             $res->result->title = getWebtoonDetail($webtoonIdx)["title"];
@@ -282,7 +282,7 @@ try {
             $res->result->week = getWebtoonDetail($webtoonIdx)["week"];
             $res->result->summary = getWebtoonDetail($webtoonIdx)["summary"];
             $res->result->isInterested = getWebtoonDetail($webtoonIdx)["isInterested"];
-            $res->result->alarm = getWebtoonDetail($webtoonIdx)["alarm"];
+            $res->result->Notice = getWebtoonDetail($webtoonIdx)["Notice"];
 
             if(!(getWebtoonList($webtoonIdx))){
                 $res->result->episode = "에피소드 없음";
@@ -339,7 +339,7 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-
+            $res->result = new stdClass();
             $res->result->episodeIdx = episodeView($webtoonIdx, $episodeIdx)["episodeIdx"];
             $res->result->title = episodeView($webtoonIdx, $episodeIdx)["title"];
             $res->result->heartStatus = episodeView($webtoonIdx, $episodeIdx)["heartStatus"];
@@ -645,6 +645,433 @@ try {
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "댓글 삭제 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+        * API No. 9
+        * API Name : 댓글 좋아요 등록/취소 API
+        * 마지막 수정 날짜 : 20.11.04
+        */
+
+        case "commentLike":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+
+            $webtoonIdx = $vars['webtoonId'];
+            $episodeIdx = $vars['episodeId'];
+            $commentIdx = $vars['commentId'];
+
+            if (!is_numeric($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_numeric($episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_numeric($commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 260;
+                $res->message = "존재하지 않은 댓글입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidWebtoon($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidEpisode($webtoonIdx, $episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidComment($webtoonIdx, $episodeIdx, $commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 260;
+                $res->message = "존재하지 않은 댓글입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (isValidCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 280;
+                $res->message = "이미 '싫어요'를 누르셨습니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isExistsCommentLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                registerCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->result = currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "댓글 좋아요 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else {
+                modifyCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->result = currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "댓글 좋아요 수정 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+        /*
+        * API No. 10
+        * API Name : 댓글 싫어요 등록/취소 API
+        * 마지막 수정 날짜 : 20.11.04
+        */
+
+        case "commentUnLike":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+
+            $webtoonIdx = $vars['webtoonId'];
+            $episodeIdx = $vars['episodeId'];
+            $commentIdx = $vars['commentId'];
+
+            if (!is_numeric($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_numeric($episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_numeric($commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 260;
+                $res->message = "존재하지 않은 댓글입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidWebtoon($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidEpisode($webtoonIdx, $episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidComment($webtoonIdx, $episodeIdx, $commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 260;
+                $res->message = "존재하지 않은 댓글입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (isValidCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 290;
+                $res->message = "이미 '좋아요'를 누르셨습니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isExistsCommentUnLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                registerCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->result = currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "댓글 싫어요 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else {
+                modifyCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->result = currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "댓글 싫어요 수정 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+        /*
+        * API No. 11
+        * API Name : 하트 등록/취소 API
+        * 마지막 수정 날짜 : 20.11.04
+        */
+
+        case "episodeHeart":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+
+            $webtoonIdx = $vars['webtoonId'];
+            $episodeIdx = $vars['episodeId'];
+
+            if (!is_numeric($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_numeric($episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isValidWebtoon($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidEpisode($webtoonIdx, $episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+
+            if (!isExistsHeart($userIdxToken, $webtoonIdx, $episodeIdx)){
+                registerHeart($userIdxToken, $webtoonIdx, $episodeIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = currentHeartStatus($userIdxToken, $webtoonIdx, $episodeIdx);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else {
+                modifyHeart($userIdxToken, $webtoonIdx, $episodeIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = currentHeartStatus($userIdxToken, $webtoonIdx, $episodeIdx);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+        /*
+        * API No. 12
+        * API Name : 관심 등록/취소 API
+        * 마지막 수정 날짜 : 20.11.04
+        */
+
+        case "registInterest":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+
+            $webtoonIdx = $vars['webtoonId'];
+
+            if (!is_numeric($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isValidWebtoon($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isExistsInterest($userIdxToken, $webtoonIdx)){
+                registNotice($userIdxToken, $webtoonIdx);
+                $res->result=registInterest($userIdxToken, $webtoonIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = currentInterestStatus($userIdxToken, $webtoonIdx);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else {
+                modifyInterest($userIdxToken, $webtoonIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = currentInterestStatus($userIdxToken, $webtoonIdx);
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+        /*
+        * API No. 13
+        * API Name : 알림 등록/취소 API
+        * 마지막 수정 날짜 : 20.11.04
+        */
+
+        case "registNotice":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+
+            $webtoonIdx = $vars['webtoonId'];
+
+            if (!is_numeric($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isValidWebtoon($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidInterest($userIdxToken, $webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 300;
+                $res->message = "관심등록을 먼저 해야합니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            if (!isExistsNotice($userIdxToken, $webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 300;
+                $res->message = "관심등록을 먼저 해야합니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            modifyNotice($userIdxToken, $webtoonIdx);
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = currentNoticeStatus($userIdxToken, $webtoonIdx);
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
     }
