@@ -35,6 +35,12 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/heart', ['IndexController', 'episodeHeart']);
     $r->addRoute('POST', '/webtoon/{webtoonId}/interest', ['IndexController', 'registInterest']);
     $r->addRoute('POST', '/webtoon/{webtoonId}/notice', ['IndexController', 'registNotice']);
+    $r->addRoute('POST', '/storage', ['IndexController', 'registerStorage']);
+    $r->addRoute('GET', '/storage', ['IndexController', 'getStorage']);
+    $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['IndexController', 'getStorageDetail']);
+    $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['IndexController', 'deleteStorage']);
+    $r->addRoute('GET', '/interested', ['IndexController', 'getInterested']);
+
 
 //    $r->addRoute('GET', '/users', 'get_all_users_handler');
 //    // {id} must be a number (\d+)
