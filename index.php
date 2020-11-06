@@ -2,6 +2,10 @@
 
 require './pdos/DatabasePdo.php';
 require './pdos/IndexPdo.php';
+require './pdos/WebtoonPdo.php';
+require './pdos/CommentPdo.php';
+require './pdos/SignalPdo.php';
+require './pdos/StoragePdo.php';
 require './pdos/JWTPdo.php';
 require './vendor/autoload.php';
 
@@ -20,24 +24,24 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   Test   ****************** */
     $r->addRoute('GET', '/', ['IndexController', 'index']);
-    $r->addRoute('GET', '/webtoon', ['IndexController', 'getWebtoons']);
-    $r->addRoute('GET', '/webtoon/list', ['IndexController', 'webtoonList']);
-    $r->addRoute('GET', '/webtoon/detail', ['IndexController', 'episodeView']);
-    $r->addRoute('GET', '/webtoon/finished', ['IndexController', 'finishedWebtoons']);
-    $r->addRoute('GET', '/webtoon/new', ['IndexController', 'newWebtoons']);
-    $r->addRoute('POST', '/comment', ['IndexController', 'postComment']);
-    $r->addRoute('GET', '/comment', ['IndexController', 'getComment']);
-    $r->addRoute('DELETE', '/comment', ['IndexController', 'deleteComment']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/like', ['IndexController', 'commentLike']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/unLike', ['IndexController', 'commentUnLike']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/heart', ['IndexController', 'episodeHeart']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/interest', ['IndexController', 'registInterest']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/notice', ['IndexController', 'registNotice']);
-    $r->addRoute('POST', '/storage', ['IndexController', 'registerStorage']);
-    $r->addRoute('GET', '/storage', ['IndexController', 'getStorage']);
-    $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['IndexController', 'getStorageDetail']);
-    $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['IndexController', 'deleteStorage']);
-    $r->addRoute('GET', '/interested', ['IndexController', 'getInterested']);
+    $r->addRoute('GET', '/webtoon', ['WebtoonController', 'getWebtoons']);
+    $r->addRoute('GET', '/webtoon/list', ['WebtoonController', 'webtoonList']);
+    $r->addRoute('GET', '/webtoon/detail', ['WebtoonController', 'episodeView']);
+    $r->addRoute('GET', '/webtoon/finished', ['WebtoonController', 'finishedWebtoons']);
+    $r->addRoute('GET', '/webtoon/new', ['WebtoonController', 'newWebtoons']);
+    $r->addRoute('POST', '/comment', ['CommentController', 'postComment']);
+    $r->addRoute('GET', '/comment', ['CommentController', 'getComment']);
+    $r->addRoute('DELETE', '/comment', ['CommentController', 'deleteComment']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/like', ['CommentController', 'commentLike']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/unLike', ['CommentController', 'commentUnLike']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/heart', ['SignalController', 'episodeHeart']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/interest', ['SignalController', 'registInterest']);
+    $r->addRoute('POST', '/webtoon/{webtoonId}/notice', ['SignalController', 'registNotice']);
+    $r->addRoute('POST', '/storage', ['StorageController', 'registerStorage']);
+    $r->addRoute('GET', '/storage', ['StorageController', 'getStorage']);
+    $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['StorageController', 'getStorageDetail']);
+    $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['StorageController', 'deleteStorage']);
+    $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
 
 
     $r->addRoute('GET', '/stateCode', ['IndexController', 'stateCode']);
@@ -109,23 +113,23 @@ switch ($routeInfo[0]) {
                 $vars = $routeInfo[2];
                 require './controllers/JWTController.php';
                 break;
-            /*case 'EventController':
+            case 'WebtoonController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/EventController.php';
+                require './controllers/WebtoonController.php';
                 break;
-            case 'ProductController':
+            case 'CommentController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ProductController.php';
+                require './controllers/CommentController.php';
                 break;
-            case 'SearchController':
+            case 'SignalController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/SearchController.php';
+                require './controllers/SignalController.php';
                 break;
-            case 'ReviewController':
+            case 'StorageController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ReviewController.php';
+                require './controllers/StorageController.php';
                 break;
-            case 'ElementController':
+            /*case 'ElementController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ElementController.php';
                 break;
