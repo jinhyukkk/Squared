@@ -17,6 +17,8 @@ try {
         case "createJwt":
             http_response_code(200);
 
+//            accessToken으로 회원정보 입력
+
             // 1) 로그인 시 email, password 받기
             if (!isValidUser($req->userId, $req->pwd)) { // JWTPdo.php 에 구현
                 $res->isSuccess = FALSE;
@@ -34,14 +36,14 @@ try {
             $res->result->jwt = $jwt;
             $res->isSuccess = TRUE;
             $res->code = 100;
-            $res->message = "테스트 성공";
+            $res->message = "jwt 발급 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
         /*
          * API No. 2
-         * API Name : JWT 유효성 검사 테스트 API
-         * 마지막 수정 날짜 : 20.08.29
+         * API Name : JWT 유효성 검사 테스트 API -> 자동로그인
+         * 마지막 수정 날짜 : 20.11.07
          */
         case "validateJwt":
 
@@ -59,10 +61,10 @@ try {
 
             // 2) JWT Payload 반환
             http_response_code(200);
-            $res->result = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $res->userIdx = getDataByJWToken($jwt, JWT_SECRET_KEY)["userIdx"];
             $res->isSuccess = TRUE;
             $res->code = 100;
-            $res->message = "테스트 성공";
+            $res->message = "자동로그인 성공";
 
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;

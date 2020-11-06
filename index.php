@@ -51,7 +51,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   JWT   ****************** */
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인
-    $r->addRoute('GET', '/jwt', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
+    $r->addRoute('GET', '/autoLogin', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
 
 
 

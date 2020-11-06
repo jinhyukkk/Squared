@@ -30,18 +30,18 @@ try {
         case "getWebtoons":
             http_response_code(200);
 
-            $class = $_GET['class'];
+            $category = $_GET['category'];
             $sort = $_GET['sort'];
 
-            if (!(($class=="mon")
-                or ($class=="tue")
-                or ($class=="wed")
-                or ($class=="thur")
-                or ($class=="fri")
-                or ($class=="sat")
-                or ($class=="sun")
-                or ($class=="new")
-                or ($class=="finish"))){
+            if (!(($category=="mon")
+                or ($category=="tue")
+                or ($category=="wed")
+                or ($category=="thur")
+                or ($category=="fri")
+                or ($category=="sat")
+                or ($category=="sun")
+                or ($category=="new")
+                or ($category=="finish"))){
                 $res->isSuccess = FALSE;
                 $res->code = 220;
                 $res->message = "잘못된 구분입니다.";
@@ -59,23 +59,23 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if (($class=="mon")
-                or ($class=="tue")
-                or ($class=="wed")
-                or ($class=="thur")
-                or ($class=="fri")
-                or ($class=="sat")
-                or ($class=="sun")){
+            if (($category=="mon")
+                or ($category=="tue")
+                or ($category=="wed")
+                or ($category=="thur")
+                or ($category=="fri")
+                or ($category=="sat")
+                or ($category=="sun")){
                 if ($sort == "hot") {
-                    $res->result = getWebtoons_Hot($class);
+                    $res->result = getWebtoons_Hot($category);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "웹툰 조회 성공";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    echo json_encode($res);
                     break;
                 }
 //            if($sort=="view"){
-//                $res->result = getWebtoons_View($class);
+//                $res->result = getWebtoons_View($category);
 //                $res->isSuccess = TRUE;
 //                $res->code = 100;
 //                $res->message = "웹툰 조회 성공";
@@ -83,7 +83,7 @@ try {
 //                break;
 //            }
 //            if($sort=="male"){
-//                $res->result = getWebtoons_Male($class);
+//                $res->result = getWebtoons_Male($category);
 //                $res->isSuccess = TRUE;
 //                $res->code = 100;
 //                $res->message = "웹툰 조회 성공";
@@ -91,7 +91,7 @@ try {
 //                break;
 //            }
 //            if($sort=="female"){
-//                $res->result = getWebtoons_Female($class);
+//                $res->result = getWebtoons_Female($category);
 //                $res->isSuccess = TRUE;
 //                $res->code = 100;
 //                $res->message = "웹툰 조회 성공";
@@ -99,21 +99,21 @@ try {
 //                break;
 //            }
                 if ($sort == "update") {
-                    $res->result = getWebtoons_Update($class);
+                    $res->result = getWebtoons_Update($category);
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "웹툰 조회 성공";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    echo json_encode($res);
                     break;
                 }
             }
-            elseif ($class=="new"){
+            elseif ($category=="new"){
                 if($sort=="hot"){
                     $res->result = newWebtoons_Hot();
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "웹툰 조회 성공";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    echo json_encode($res);
                     break;
                 }
 //            if($sort=="view"){
@@ -145,17 +145,17 @@ try {
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "웹툰 조회 성공";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    echo json_encode($res);
                     break;
                 }
             }
-            elseif ($class=="finish"){
+            elseif ($category=="finish"){
                 if($sort=="hot"){
                     $res->result = finishedWebtoons_Hot();
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "웹툰 조회 성공";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    echo json_encode($res);
                     break;
                 }
 //            if($sort=="view"){
@@ -187,7 +187,7 @@ try {
                     $res->isSuccess = TRUE;
                     $res->code = 100;
                     $res->message = "웹툰 조회 성공";
-                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    echo json_encode($res);
                     break;
                 }
             }
@@ -201,27 +201,27 @@ try {
         case "webtoonList":
             http_response_code(200);
 
-//            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
-//                $res->isSuccess = FALSE;
-//                $res->code = 202;
-//                $res->message = "유효하지 않은 토큰입니다.";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                addErrorLogs($errorLogs, $res, $req);
-//                return;
-//            }
-//
-//            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
-//
-//            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
-//                $res->isSuccess = FALSE;
-//                $res->code = 202;
-//                $res->message = "유효하지 않은 토큰입니다.";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                addErrorLogs($errorLogs, $res, $req);
-//                return;
-//            }
-//
-//            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
             $webtoonIdx = $vars['webtoonId'];
 
@@ -242,26 +242,26 @@ try {
                 break;
             }
             $res->result = new stdClass();
-            $res->result->thumbnailUrl = getWebtoonDetail($webtoonIdx)["subThumbnailUrl"];
-            $res->result->color = getWebtoonDetail($webtoonIdx)["color"];
-            $res->result->title = getWebtoonDetail($webtoonIdx)["title"];
-            $res->result->creator = getWebtoonDetail($webtoonIdx)["creator"];
-            $res->result->week = getWebtoonDetail($webtoonIdx)["week"];
-            $res->result->summary = getWebtoonDetail($webtoonIdx)["summary"];
-            $res->result->isInterested = getWebtoonDetail($webtoonIdx)["isInterested"];
-            $res->result->Notice = getWebtoonDetail($webtoonIdx)["Notice"];
+            $res->result->thumbnailUrl = getWebtoonDetail($webtoonIdx, $userIdxToken)["subThumbnailUrl"];
+            $res->result->color = getWebtoonDetail($webtoonIdx, $userIdxToken)["color"];
+            $res->result->title = getWebtoonDetail($webtoonIdx, $userIdxToken)["title"];
+            $res->result->creator = getWebtoonDetail($webtoonIdx, $userIdxToken)["creator"];
+            $res->result->week = getWebtoonDetail($webtoonIdx, $userIdxToken)["week"];
+            $res->result->summary = getWebtoonDetail($webtoonIdx, $userIdxToken)["summary"];
+            $res->result->isInterested = getWebtoonDetail($webtoonIdx, $userIdxToken)["isInterested"];
+            $res->result->Notice = getWebtoonDetail($webtoonIdx, $userIdxToken)["Notice"];
 
-            if(!(getWebtoonList($webtoonIdx))){
+            if(!(getWebtoonList($webtoonIdx, $userIdxToken))){
                 $res->result->episode = "에피소드 없음";
             }
             else{
-                $res->result->episode = getWebtoonList($webtoonIdx);
+                $res->result->episode = getWebtoonList($webtoonIdx, $userIdxToken);
             }
 
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "웹툰 상세 조회 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
+            echo json_encode($res);
             break;
 
         /*

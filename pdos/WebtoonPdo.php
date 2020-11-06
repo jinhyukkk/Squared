@@ -256,7 +256,7 @@ function isValidWebtoon($webtoonId)
 }
 
 //웹툰 상세조회
-function getWebtoonDetail($webtoonIdx)
+function getWebtoonDetail($webtoonIdx, $userIdxToken)
 {
     $pdo = pdoSqlConnect();
     $query = "select subThumbnailUrl,
@@ -273,14 +273,14 @@ function getWebtoonDetail($webtoonIdx)
            when week = 'sat' then '토요웹툰'
            when week = 'sun' then '일요웹툰' end as week,
        summary,
-       IF(exists(select * from Interest where webtoonIdx=$webtoonIdx and userIdx=1 and isDeleted='N'), 'Y', 'N') as isInterested,
-       IF(exists(select * from Notice where webtoonIdx=$webtoonIdx and userIdx=1 and isDeleted='N'), 'Y', 'N') as Notice
+       IF(exists(select * from Interest where webtoonIdx=$webtoonIdx and userIdx=$userIdxToken and isDeleted='N'), 'Y', 'N') as isInterested,
+       IF(exists(select * from Notice where webtoonIdx=$webtoonIdx and userIdx=$userIdxToken and isDeleted='N'), 'Y', 'N') as Notice
 from Webtoon
 where webtoonIdx = $webtoonIdx;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
-    $st->execute([$webtoonIdx]);
+    $st->execute([$webtoonIdx, $userIdxToken]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -291,7 +291,7 @@ where webtoonIdx = $webtoonIdx;";
 }
 
 //웹툰 리스트 상세조회
-function getWebtoonList($webtoonIdx)
+function getWebtoonList($webtoonIdx, $userIdxToken)
 {
     $pdo = pdoSqlConnect();
     $query = "select Episode.episodeIdx,
@@ -299,19 +299,22 @@ function getWebtoonList($webtoonIdx)
        title,
        IF(DATE(Episode.createdAt) = DATE(NOW()), 'Y', 'N')             as up,
        IF(isnull(StarGrade.grade), '0.00', format(StarGrade.grade, 2)) as star,
-       date_format(updatedAt, '%y.%c.%d')                              as updatedDate,
-       IF(isnull(music), 'N', 'Y') as music
+       date_format(Episode.updatedAt, '%y.%c.%d')                      as updatedDate,
+       IF(isnull(music), 'N', 'Y')                                     as music,
+       IF(S.createdAt, IF(timediff(DATE_ADD(S.createdAt, INTERVAL 48 HOUR), now()) < 0, '저장기간만료', '임시저장됨'),
+          '표시안함')                                                      as isSaved
 from Episode
          left outer join (select webtoonIdx, episodeIdx, format(AVG(grade), 2) as grade
                           from Star
                           group by episodeIdx) StarGrade
                          on StarGrade.episodeIdx = Episode.episodeIdx
-where Episode.webtoonIdx = ?
+         left outer join (select * from Storage where userIdx = $userIdxToken) S on Episode.episodeIdx = S.episodeIdx
+where Episode.webtoonIdx = $webtoonIdx
 order by episodeIdx desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
-    $st->execute([$webtoonIdx]);
+    $st->execute([$webtoonIdx, $userIdxToken]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
