@@ -30,19 +30,21 @@ try {
         case "getWebtoons":
             http_response_code(200);
 
-            $week = $_GET['week'];
+            $class = $_GET['class'];
             $sort = $_GET['sort'];
 
-            if (!(($week=="mon")
-                or ($week=="tue")
-                or ($week=="wed")
-                or ($week=="thur")
-                or ($week=="fri")
-                or ($week=="sat")
-                or ($week=="sun"))){
+            if (!(($class=="mon")
+                or ($class=="tue")
+                or ($class=="wed")
+                or ($class=="thur")
+                or ($class=="fri")
+                or ($class=="sat")
+                or ($class=="sun")
+                or ($class=="new")
+                or ($class=="finish"))){
                 $res->isSuccess = FALSE;
                 $res->code = 220;
-                $res->message = "존재하지 않은 요일입니다.";
+                $res->message = "잘못된 구분입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
@@ -57,16 +59,23 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if($sort=="hot"){
-                $res->result = getWebtoons_Hot($week);
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "웹툰 조회 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
+            if (($class=="mon")
+                or ($class=="tue")
+                or ($class=="wed")
+                or ($class=="thur")
+                or ($class=="fri")
+                or ($class=="sat")
+                or ($class=="sun")){
+                if ($sort == "hot") {
+                    $res->result = getWebtoons_Hot($class);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "웹툰 조회 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
 //            if($sort=="view"){
-//                $res->result = getWebtoons_View($week);
+//                $res->result = getWebtoons_View($class);
 //                $res->isSuccess = TRUE;
 //                $res->code = 100;
 //                $res->message = "웹툰 조회 성공";
@@ -74,7 +83,7 @@ try {
 //                break;
 //            }
 //            if($sort=="male"){
-//                $res->result = getWebtoons_Male($week);
+//                $res->result = getWebtoons_Male($class);
 //                $res->isSuccess = TRUE;
 //                $res->code = 100;
 //                $res->message = "웹툰 조회 성공";
@@ -82,116 +91,31 @@ try {
 //                break;
 //            }
 //            if($sort=="female"){
-//                $res->result = getWebtoons_Female($week);
+//                $res->result = getWebtoons_Female($class);
 //                $res->isSuccess = TRUE;
 //                $res->code = 100;
 //                $res->message = "웹툰 조회 성공";
 //                echo json_encode($res, JSON_NUMERIC_CHECK);
 //                break;
 //            }
-            if($sort=="update"){
-                $res->result = getWebtoons_Update($week);
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "웹툰 조회 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
+                if ($sort == "update") {
+                    $res->result = getWebtoons_Update($class);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "웹툰 조회 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
             }
-
-        /*
-         * API No. 2
-         * API Name : 완결웹툰 조회 API
-         * 마지막 수정 날짜 : 20.11.02
-         */
-
-        case "finishedWebtoons":
-            http_response_code(200);
-
-            $sort = $_GET['sort'];
-
-            if (!(($sort=="hot")
-                or ($sort=="view")
-                or ($sort=="male")
-                or ($sort=="female")
-                or ($sort=="update"))){
-                $res->isSuccess = FALSE;
-                $res->code = 230;
-                $res->message = "존재하지 않은 정렬입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-            if($sort=="hot"){
-                $res->result = finishedWebtoons_Hot();
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "웹툰 조회 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-//            if($sort=="view"){
-//                $res->result = finishedWebtoons_View();
-//                $res->isSuccess = TRUE;
-//                $res->code = 100;
-//                $res->message = "웹툰 조회 성공";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-//            if($sort=="male"){
-//                $res->result = finishedWebtoons_Male();
-//                $res->isSuccess = TRUE;
-//                $res->code = 100;
-//                $res->message = "웹툰 조회 성공";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-//            if($sort=="female"){
-//                $res->result = finishedWebtoons_Female();
-//                $res->isSuccess = TRUE;
-//                $res->code = 100;
-//                $res->message = "웹툰 조회 성공";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-            if($sort=="update"){
-                $res->result = finishedWebtoons_Update();
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "웹툰 조회 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-        /*
-         * API No. 3
-         * API Name : 신작 웸툰 조회 API
-         * 마지막 수정 날짜 : 20.11.02
-         */
-        case "newWebtoons":
-            http_response_code(200);
-
-            $sort = $_GET['sort'];
-
-            if (!(($sort=="hot")
-                or ($sort=="view")
-                or ($sort=="male")
-                or ($sort=="female")
-                or ($sort=="update"))){
-                $res->isSuccess = FALSE;
-                $res->code = 230;
-                $res->message = "존재하지 않은 정렬입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-            if($sort=="hot"){
-                $res->result = newWebtoons_Hot();
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "웹툰 조회 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
+            elseif ($class=="new"){
+                if($sort=="hot"){
+                    $res->result = newWebtoons_Hot();
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "웹툰 조회 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
 //            if($sort=="view"){
 //                $res->result = newWebtoons_View();
 //                $res->isSuccess = TRUE;
@@ -216,17 +140,60 @@ try {
 //                echo json_encode($res, JSON_NUMERIC_CHECK);
 //                break;
 //            }
-            if($sort=="update"){
-                $res->result = newWebtoons_Update();
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "웹툰 조회 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
+                if($sort=="update"){
+                    $res->result = newWebtoons_Update();
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "웹툰 조회 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
+            elseif ($class=="finish"){
+                if($sort=="hot"){
+                    $res->result = finishedWebtoons_Hot();
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "웹툰 조회 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+//            if($sort=="view"){
+//                $res->result = finishedWebtoons_View();
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "웹툰 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//            if($sort=="male"){
+//                $res->result = finishedWebtoons_Male();
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "웹툰 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//            if($sort=="female"){
+//                $res->result = finishedWebtoons_Female();
+//                $res->isSuccess = TRUE;
+//                $res->code = 100;
+//                $res->message = "웹툰 조회 성공";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+                if($sort=="update"){
+                    $res->result = finishedWebtoons_Update();
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "웹툰 조회 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
             }
 
         /*
-        * API No. 4
+        * API No. 2
         * API Name : 웸툰 상세 조회 API
         * 마지막 수정 날짜 : 20.11.03
         */
@@ -256,7 +223,7 @@ try {
 //
 //            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
-            $webtoonIdx = $_GET['webtoonId'];
+            $webtoonIdx = $vars['webtoonId'];
 
 
             if (!is_numeric($webtoonIdx)){
@@ -298,15 +265,15 @@ try {
             break;
 
         /*
-        * API No. 5
+        * API No. 3
         * API Name : 웸툰 회차별 상세 조회 API
         * 마지막 수정 날짜 : 20.11.03
         */
         case "episodeView":
             http_response_code(200);
 
-            $webtoonIdx = $_GET['webtoonId'];
-            $episodeIdx = $_GET['episodeId'];
+            $webtoonIdx = $vars['webtoonId'];
+            $episodeIdx = $vars['episodeId'];
 
             if (!is_numeric($webtoonIdx)){
                 $res->isSuccess = FALSE;
@@ -345,7 +312,13 @@ try {
             $res->result->heartStatus = episodeView($webtoonIdx, $episodeIdx)["heartStatus"];
             $res->result->heartCount = episodeView($webtoonIdx, $episodeIdx)["heartCount"];
             $res->result->commentCount = episodeView($webtoonIdx, $episodeIdx)["commentCount"];
-            $res->result->contentsUrl = episodeContents($webtoonIdx, $episodeIdx);
+            if(episodeContents($webtoonIdx, $episodeIdx)){
+                $res->result->contentsUrl = episodeContents($webtoonIdx, $episodeIdx);
+            }
+            else {
+                $res->result->contentsUrl = "웹툰 내용 없음";
+            }
+
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "웹툰 회차 조회 성공";
