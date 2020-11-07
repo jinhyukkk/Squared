@@ -40,18 +40,15 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['StorageController', 'getStorageDetail']);
     $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['StorageController', 'deleteStorage']);
     $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
-
-
-    $r->addRoute('GET', '/stateCode', ['IndexController', 'stateCode']);
     $r->addRoute('POST', '/login/naver', ['IndexController', 'naverLogin']);
-//    $r->addRoute('POST', '/user/naver', ['IndexController', 'naverCreateUser']);
-    $r->addRoute('GET', '/naverCallback', ['IndexController', 'naverCallback']);
-    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
-    $r->addRoute('POST', '/user', ['IndexController', 'createUser']); // 비밀번호 해싱 예시 추가
+
+
+//    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
+//    $r->addRoute('POST', '/user', ['IndexController', 'createUser']); // 비밀번호 해싱 예시 추가
 
     /* ******************   JWT   ****************** */
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인
-    $r->addRoute('GET', '/autoLogin', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
+    $r->addRoute('POST', '/autoLogin', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
 
 
 
