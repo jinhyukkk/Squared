@@ -42,7 +42,7 @@ $query = "select concat('전체 ', count(S.webtoonIdx)) as count
 from (select distinct W.webtoonIdx, W.title, W.thumbnailUrl, W.creator
 from Storage
 left outer join Webtoon W on W.webtoonIdx = Storage.webtoonIdx
-where userIdx = 1 and W.isDeleted = 'N') S";
+where userIdx = $userIdxToken and W.isDeleted = 'N') S";
 
 $st = $pdo->prepare($query);
 //    $st->execute([$param,$param]);

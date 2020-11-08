@@ -7,6 +7,7 @@ require './pdos/CommentPdo.php';
 require './pdos/SignalPdo.php';
 require './pdos/StoragePdo.php';
 require './pdos/JWTPdo.php';
+require './pdos/RecommendationPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -41,6 +42,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['StorageController', 'deleteStorage']);
     $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
     $r->addRoute('GET', '/recentlyView', ['WebtoonController', 'recentlyView']);
+    $r->addRoute('GET', '/recommendation', ['RecommendationController', 'recommendation']);
+    $r->addRoute('GET', '/freeRounds', ['RecommendationController', 'freeRounds']);
 
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
@@ -125,14 +128,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/StorageController.php';
                 break;
-            /*case 'ElementController':
+            case 'RecommendationController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ElementController.php';
+                require './controllers/RecommendationController.php';
                 break;
-            case 'AskFAQController':
-                $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/AskFAQController.php';
-                break;*/
+
         }
 
         break;

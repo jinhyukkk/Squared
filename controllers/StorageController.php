@@ -129,7 +129,7 @@ try {
 
             $res->result = new stdClass();
             $res->result->count = getStorageCount($userIdxToken);
-            if(getInterested($userIdxToken)){
+            if(getStorage($userIdxToken)){
                 $res->result->webtoonList = getStorage($userIdxToken);
             }
             else {

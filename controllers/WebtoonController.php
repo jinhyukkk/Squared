@@ -331,7 +331,7 @@ try {
                 else {
                     $res->result->contentsUrl = "웹툰 내용 없음";
                 }
-                if(isExistViewPoint($userIdxToken, $webtoonIdx)){
+                if(isExistViewPoint($userIdxToken, $webtoonIdx, $episodeIdx)){
                     updateViewPoint($userIdxToken, $webtoonIdx, $episodeIdx);
                 }
                 else{
@@ -394,7 +394,7 @@ try {
             }
 
             $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
-            
+
             if(!isExistsRecentlyView($userIdxToken)){
                 $res->count = 0;
             }
