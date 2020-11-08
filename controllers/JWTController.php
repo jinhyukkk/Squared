@@ -38,20 +38,35 @@ try {
 //            } else {
 //                echo "Error 내용:".$response;
 //            }
-            // 1) 로그인 시 email, password 받기
-            if (!isValidUser($req->userId, $req->pwd)) { // JWTPdo.php 에 구현
+//            // 1) 로그인 시 email, password 받기
+//            if (!isValidUser($req->userId, $req->pwd)) { // JWTPdo.php 에 구현
+//                $res->isSuccess = FALSE;
+//                $res->code = 201;
+//                $res->message = "유효하지 않은 아이디 입니다";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                return;
+//            }
+            if (!isset($req->email)) { // JWTPdo.php 에 구현
                 $res->isSuccess = FALSE;
                 $res->code = 201;
-                $res->message = "유효하지 않은 아이디 입니다";
+                $res->message = "유효하지 않은 이메일 입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            if (!isEmailExist($req->email)) { // JWTPdo.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 201;
+                $res->message = "유효하지 않은 이메일 입니다";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
 
             // 2) JWT 발급
             // Payload에 맞게 다시 설정 요함, 아래는 Payload에 userIdx를 넣기 위한 과정
-            $userIdx = getUserIdxByID($req->userId);  // JWTPdo.php 에 구현
-            $jwt = getJWT($userIdx, JWT_SECRET_KEY); // function.php 에 구현
 
+            $userIdx = getUserIdxByEMAIL($req->email);  // JWTPdo.php 에 구현
+            $jwt = getJWT($userIdx, JWT_SECRET_KEY); // function.php 에 구현
+            $res->result = new stdClass();
             $res->result->jwt = $jwt;
             $res->isSuccess = TRUE;
             $res->code = 100;
@@ -80,7 +95,7 @@ try {
 
             // 2) JWT Payload 반환
             http_response_code(200);
-            $res->userIdx = getDataByJWToken($jwt, JWT_SECRET_KEY)["userIdx"];
+            $res->userIdx = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "자동로그인 성공";

@@ -40,7 +40,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['StorageController', 'getStorageDetail']);
     $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['StorageController', 'deleteStorage']);
     $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
-    $r->addRoute('POST', '/login/naver', ['IndexController', 'naverLogin']);
+    $r->addRoute('GET', '/recentlyView', ['WebtoonController', 'recentlyView']);
 
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
@@ -49,6 +49,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     /* ******************   JWT   ****************** */
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인
     $r->addRoute('POST', '/autoLogin', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
+    $r->addRoute('POST', '/login/naver', ['IndexController', 'naverLogin']);
 
 
 

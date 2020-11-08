@@ -59,7 +59,7 @@ function getDataByJWToken($jwt, $secretKey)
     }
 
 //    print_r($decoded);
-    return (array)$decoded;
+    return $decoded;
 
 }
 

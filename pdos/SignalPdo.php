@@ -246,7 +246,7 @@ function isExistsInterested($userIdxToken){
 function getInterestedCount($userIdxToken)
 {
     $pdo = pdoSqlConnect();
-    $query = "select count(webtoonIdx) as count from Interest 
+    $query = "select concat('전체 ', count(webtoonIdx)) as count from Interest 
                 where userIdx = $userIdxToken and isDeleted = 'N' group by userIdx;";
 
     $st = $pdo->prepare($query);

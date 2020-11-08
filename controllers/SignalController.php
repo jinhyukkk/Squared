@@ -274,18 +274,17 @@ try {
 
             $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
-            $res->result = new stdClass();
             if(!isExistsInterested($userIdxToken)){
-                $res->result->count = 0;
+                $res->count = 0;
             }
             else {
-                $res->result->count = getInterestedCount($userIdxToken);
+                $res->count = getInterestedCount($userIdxToken);
             }
             if(getInterested($userIdxToken)){
-                $res->result->webtoonList = getInterested($userIdxToken);
+                $res->webtoonList = getInterested($userIdxToken);
             }
             else {
-                $res->result->webtoonList = "관심웹툰 없음";
+                $res->webtoonList = "관심웹툰 없음";
             }
 
             $res->isSuccess = TRUE;

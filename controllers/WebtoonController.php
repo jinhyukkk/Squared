@@ -306,24 +306,114 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            $res->result = new stdClass();
-            $res->result->episodeIdx = episodeView($webtoonIdx, $episodeIdx)["episodeIdx"];
-            $res->result->title = episodeView($webtoonIdx, $episodeIdx)["title"];
-            $res->result->heartStatus = episodeView($webtoonIdx, $episodeIdx)["heartStatus"];
-            $res->result->heartCount = episodeView($webtoonIdx, $episodeIdx)["heartCount"];
-            $res->result->commentCount = episodeView($webtoonIdx, $episodeIdx)["commentCount"];
-            if(episodeContents($webtoonIdx, $episodeIdx)){
-                $res->result->contentsUrl = episodeContents($webtoonIdx, $episodeIdx);
+
+            if(isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+                if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                    $res->isSuccess = FALSE;
+                    $res->code = 202;
+                    $res->message = "유효하지 않은 토큰입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    addErrorLogs($errorLogs, $res, $req);
+                    return;
+                }
+                $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+
+                $res->result = new stdClass();
+                $res->result->episodeIdx = episodeView($webtoonIdx, $episodeIdx)["episodeIdx"];
+                $res->result->title = episodeView($webtoonIdx, $episodeIdx)["title"];
+                $res->result->heartStatus = episodeView($webtoonIdx, $episodeIdx)["heartStatus"];
+                $res->result->heartCount = episodeView($webtoonIdx, $episodeIdx)["heartCount"];
+                $res->result->commentCount = episodeView($webtoonIdx, $episodeIdx)["commentCount"];
+                if(episodeContents($webtoonIdx, $episodeIdx)){
+                    $res->result->contentsUrl = episodeContents($webtoonIdx, $episodeIdx);
+                }
+                else {
+                    $res->result->contentsUrl = "웹툰 내용 없음";
+                }
+                if(isExistViewPoint($userIdxToken, $webtoonIdx)){
+                    updateViewPoint($userIdxToken, $webtoonIdx, $episodeIdx);
+                }
+                else{
+                    creatViewPoint($userIdxToken, $webtoonIdx, $episodeIdx);
+                }
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "웹툰 회차 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            else{
+                $res->result = new stdClass();
+                $res->result->episodeIdx = episodeView($webtoonIdx, $episodeIdx)["episodeIdx"];
+                $res->result->title = episodeView($webtoonIdx, $episodeIdx)["title"];
+                $res->result->heartStatus = episodeView($webtoonIdx, $episodeIdx)["heartStatus"];
+                $res->result->heartCount = episodeView($webtoonIdx, $episodeIdx)["heartCount"];
+                $res->result->commentCount = episodeView($webtoonIdx, $episodeIdx)["commentCount"];
+                if(episodeContents($webtoonIdx, $episodeIdx)){
+                    $res->result->contentsUrl = episodeContents($webtoonIdx, $episodeIdx);
+                }
+                else {
+                    $res->result->contentsUrl = "웹툰 내용 없음";
+                }
+
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "웹툰 회차 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+        /*
+        * API No. 19
+        * API Name : 최근 본 웸툰 조회 API
+        * 마지막 수정 날짜 : 20.11.08
+        */
+
+        case "recentlyView":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+            
+            if(!isExistsRecentlyView($userIdxToken)){
+                $res->count = 0;
             }
             else {
-                $res->result->contentsUrl = "웹툰 내용 없음";
+                $res->count = getRecentlyViewCount($userIdxToken);
+            }
+            if(getRecentlyView($userIdxToken)){
+                $res->webtoonList = getRecentlyView($userIdxToken);
+            }
+            else {
+                $res->webtoonList = "최근 본 웹툰 없음";
             }
 
             $res->isSuccess = TRUE;
             $res->code = 100;
-            $res->message = "웹툰 회차 조회 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
+            $res->message = "최근 본 웹툰 조회 성공";
+            echo json_encode($res);
             break;
+
 
     }
 } catch (\Exception $e) {

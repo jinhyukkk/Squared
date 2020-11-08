@@ -1,5 +1,66 @@
 <?php
 
+// CREATE
+//    function addMaintenance($message){
+//        $pdo = pdoSqlConnect();
+//        $query = "INSERT INTO MAINTENANCE (MESSAGE) VALUES (?);";
+//
+//        $st = $pdo->prepare($query);
+//        $st->execute([$message]);
+//
+//        $st = null;
+//        $pdo = null;
+//
+//    }
+// UPDATE
+//    function updateMaintenanceStatus($message, $status, $no){
+//        $pdo = pdoSqlConnect();
+//        $query = "UPDATE MAINTENANCE
+//                        SET MESSAGE = ?,
+//                            STATUS  = ?
+//                        WHERE NO = ?";
+//
+//        $st = $pdo->prepare($query);
+//        $st->execute([$message, $status, $no]);
+//        $st = null;
+//        $pdo = null;
+//    }
+// RETURN BOOLEAN
+//    function isRedundantEmail($email){
+//        $pdo = pdoSqlConnect();
+//        $query = "SELECT EXISTS(SELECT * FROM USER_TB WHERE EMAIL= ?) AS exist;";
+//
+//
+//        $st = $pdo->prepare($query);
+//        //    $st->execute([$param,$param]);
+//        $st->execute([$email]);
+//        $st->setFetchMode(PDO::FETCH_ASSOC);
+//        $res = $st->fetchAll();
+//
+//        $st=null;$pdo = null;
+//
+//        return intval($res[0]["exist"]);
+//
+//    }
+////READ
+//function getUserDetail($userIdx)
+//{
+//    $pdo = pdoSqlConnect();
+//    $query = "select * from Users where userIdx = ?;";
+//
+//    $st = $pdo->prepare($query);
+//    $st->execute([$userIdx]);
+//    //    $st->execute();
+//    $st->setFetchMode(PDO::FETCH_ASSOC);
+//    $res = $st->fetchAll();
+//
+//    $st = null;
+//    $pdo = null;
+//
+//    return $res[0];
+//}
+//
+
 //요일별 웹툰 업데이트순
 function getWebtoons_Update($keyword)
 {
@@ -25,7 +86,7 @@ from Webtoon
                          on CountEpisode.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where week = ? order by recentUpdate.recent desc;";
+where week = ? and Webtoon.isDeleted = 'N' order by recentUpdate.recent desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -63,7 +124,7 @@ from Webtoon
                          on CountEpisode.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where week = ? order by grade desc;";
+where week = ? and Webtoon.isDeleted = 'N' order by grade desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -93,8 +154,7 @@ from Webtoon
                          on StarGrade.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where complete='Y'
-order by grade desc;";
+where complete='Y' and Webtoon.isDeleted = 'N' order by grade desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -124,8 +184,7 @@ from Webtoon
                          on StarGrade.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where complete='Y'
-order by recentUpdate.recent desc;";
+where complete='Y' and Webtoon.isDeleted = 'N' order by recentUpdate.recent desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -172,9 +231,7 @@ from Webtoon
                          on CountEpisode.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where isnull(CountEpisode.webtoonIdx)
-   or episode < 7
-order by grade desc;";
+where (isnull(CountEpisode.webtoonIdx) or episode < 7) and Webtoon.isDeleted = 'N' order by grade desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -220,9 +277,7 @@ from Webtoon
                          on CountEpisode.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where isnull(CountEpisode.webtoonIdx)
-   or episode < 7
-order by recentUpdate.recent desc;";
+where (isnull(CountEpisode.webtoonIdx) or episode < 7) and Webtoon.isDeleted = 'N' order by recentUpdate.recent desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -241,7 +296,7 @@ order by recentUpdate.recent desc;";
 function isValidWebtoon($webtoonId)
 {
     $pdo = pdoSqlConnect();
-    $query = "select EXISTS(select * from Webtoon where webtoonIdx = ?) exist;";
+    $query = "select EXISTS(select * from Webtoon where webtoonIdx = ? and isDeleted = 'N') exist;";
 
     $st = $pdo->prepare($query);
     $st->execute([$webtoonId]);
@@ -276,7 +331,7 @@ function getWebtoonDetail($webtoonIdx, $userIdxToken)
        IF(exists(select * from Interest where webtoonIdx=$webtoonIdx and userIdx=$userIdxToken and isDeleted='N'), 'Y', 'N') as isInterested,
        IF(exists(select * from Notice where webtoonIdx=$webtoonIdx and userIdx=$userIdxToken and isDeleted='N'), 'Y', 'N') as Notice
 from Webtoon
-where webtoonIdx = $webtoonIdx;";
+where webtoonIdx = $webtoonIdx and Webtoon.isDeleted = 'N';";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -309,8 +364,7 @@ from Episode
                           group by episodeIdx) StarGrade
                          on StarGrade.episodeIdx = Episode.episodeIdx
          left outer join (select * from Storage where userIdx = $userIdxToken) S on Episode.episodeIdx = S.episodeIdx
-where Episode.webtoonIdx = $webtoonIdx
-order by episodeIdx desc;";
+where Episode.webtoonIdx = $webtoonIdx order by episodeIdx desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -328,7 +382,9 @@ order by episodeIdx desc;";
 function isValidEpisode($webtoonIdx, $episodeIdx)
 {
     $pdo = pdoSqlConnect();
-    $query = "select EXISTS(select * from Episode where webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx) exist;";
+    $query = "select EXISTS(select * from Episode where webtoonIdx = $webtoonIdx 
+                                                    and episodeIdx = $episodeIdx 
+                                                    and isDeleted = 'N') exist;";
 
     $st = $pdo->prepare($query);
     $st->execute([$webtoonIdx, $episodeIdx]);
@@ -360,7 +416,8 @@ function episodeView($webtoonIdx, $episodeIdx)
           'N')                                                       as heartStatus
 from Episode
 where webtoonIdx = $webtoonIdx
-  and episodeIdx = $episodeIdx;";
+  and episodeIdx = $episodeIdx 
+  and isDeleted = 'N';";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -374,14 +431,14 @@ where webtoonIdx = $webtoonIdx
     return $res[0];
 }
 
-//웹툰 회차별 상세조회
+//웹툰 회차별 내용 상세조회
 function episodeContents($webtoonIdx, $episodeIdx)
 {
     $pdo = pdoSqlConnect();
     $query = "select contentsUrl
 from EpisodeContents
-where webtoonIdx = ?
-  and episodeIdx = ?
+where webtoonIdx = $webtoonIdx
+  and episodeIdx = $episodeIdx
 order by contentsUrl;";
 
     $st = $pdo->prepare($query);
@@ -394,4 +451,113 @@ order by contentsUrl;";
     $pdo = null;
 
     return $res;
+}
+// 존재하는 viewPoint
+function isExistViewPoint($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM History WHERE userIdx = $userIdxToken 
+                                                and webtoonIdx = $webtoonIdx
+                                                and isDeleted = 'N') AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+// CREATE viewPoint
+    function creatViewPoint($userIdxToken, $webtoonIdx, $episodeIdx){
+        $pdo = pdoSqlConnect();
+        $query = "INSERT INTO History (userIdx, webtoonIdx, episodeIdx) VALUES ($userIdxToken, $webtoonIdx, $episodeIdx);";
+
+        $st = $pdo->prepare($query);
+        $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+
+        $st = null;
+        $pdo = null;
+
+    }
+// UPDATE viewPoint
+    function updateViewPoint($userIdxToken, $webtoonIdx, $episodeIdx){
+        $pdo = pdoSqlConnect();
+        $query = "UPDATE History
+                        SET episodeIdx = IF(episodeIdx < $episodeIdx, $episodeIdx, episodeIdx), updatedAt = now()
+                        WHERE userIdx = $userIdxToken and webtoonIdx = $webtoonIdx and isDeleted = 'N';";
+
+        $st = $pdo->prepare($query);
+        $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+        $st = null;
+        $pdo = null;
+    }
+//최근 본 웹툰 조회
+function getRecentlyView($userIdxToken)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select H.webtoonIdx,
+       title,
+       thumbnailUrl,
+       IF(datediff(now(), H.updatedAt) = 0, '오늘', concat(datediff(now(), H.updatedAt), '일전')) as lastDate,
+       concat(episodeIdx, '화', ' 이어보기')                                                      as viewPoint,
+       IF(isnull(CountEpisode.webtoonIdx), 'N', IF(episode < 7, 'Y', 'N'))                    as new,
+       viewType,
+       complete                                                                               as isFinished,
+       every24
+from History H
+         join Webtoon W on H.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx, count(episodeIdx) as episode from Episode group by webtoonIdx) CountEpisode
+                         on CountEpisode.webtoonIdx = H.webtoonIdx
+where userIdx = $userIdxToken and H.isDeleted = 'N'";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+// 존재하는 최근 본 웹툰
+function isExistsRecentlyView($userIdxToken){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from History 
+                where userIdx = $userIdxToken and isDeleted = 'N' group by userIdx) AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+//최근 본 웹툰 개수 조회
+function getRecentlyViewCount($userIdxToken)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select concat('전체 ', count(webtoonIdx)) as count from History
+                where userIdx = $userIdxToken and isDeleted = 'N' group by userIdx;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]["count"];
 }
