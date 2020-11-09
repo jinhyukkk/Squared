@@ -205,7 +205,7 @@ function getInterested($userIdxToken)
        IF(isnull(N.isDeleted), 'N', if(N.isDeleted = 'N', 'Y', 'N')) as isNotice
 from Interest I
          join Webtoon W on I.webtoonIdx = W.webtoonIdx
-         left outer join Notice N on I.userIdx = N.userIdx
+         left outer join Notice N on I.webtoonIdx = N.webtoonIdx
          left outer join (select webtoonIdx
                           from Episode
                           where DATE(createdAt) = DATE(NOW())

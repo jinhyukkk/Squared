@@ -43,7 +43,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
     $r->addRoute('GET', '/recentlyView', ['WebtoonController', 'recentlyView']);
     $r->addRoute('GET', '/recommendation', ['RecommendationController', 'recommendation']);
-    $r->addRoute('GET', '/freeRounds', ['RecommendationController', 'freeRounds']);
+    $r->addRoute('GET', '/recommendation/top10', ['RecommendationController', 'top10']);
+    $r->addRoute('GET', '/recommendation/interested', ['RecommendationController', 'freeRounds']);
+
 
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
