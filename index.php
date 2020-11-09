@@ -8,6 +8,8 @@ require './pdos/SignalPdo.php';
 require './pdos/StoragePdo.php';
 require './pdos/JWTPdo.php';
 require './pdos/RecommendationPdo.php';
+require './pdos/AdvertisingPdo.php';
+require './pdos/SearchPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -45,7 +47,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/recommendation', ['RecommendationController', 'recommendation']);
     $r->addRoute('GET', '/recommendation/top10', ['RecommendationController', 'top10']);
     $r->addRoute('GET', '/recommendation/interested', ['RecommendationController', 'freeRounds']);
-
+    $r->addRoute('GET', '/advertising', ['AdvertisingController', 'advertising']);
+    $r->addRoute('GET', '/search', ['SearchController', 'search']);
 
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
@@ -54,7 +57,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     /* ******************   JWT   ****************** */
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인
     $r->addRoute('POST', '/autoLogin', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
-    $r->addRoute('POST', '/login/naver', ['IndexController', 'naverLogin']);
+    $r->addRoute('POST', '/naverLogin', ['IndexController', 'naverLogin']);
 
 
 
@@ -133,6 +136,14 @@ switch ($routeInfo[0]) {
             case 'RecommendationController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/RecommendationController.php';
+                break;
+            case 'AdvertisingController':
+                $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
+                require './controllers/AdvertisingController.php';
+                break;
+            case 'SearchController':
+                $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
+                require './controllers/SearchController.php';
                 break;
 
         }

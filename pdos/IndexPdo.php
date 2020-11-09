@@ -79,13 +79,13 @@
     }
 
 // UPDATE User
-    function updateUser($id, $nickname, $email, $gender, $age, $birth){
+    function updateUser($id, $nickname, $email, $gender, $age){
         $pdo = pdoSqlConnect();
-        $query = "INSERT INTO Users (userId, nickName, email, gender, age, birth)
-                             VALUES ($id, $nickname, $email, $gender, $age, $birth)";
+        $query = "INSERT INTO Users (userId, nickName, email, gender, age)
+                             VALUES ('".$id."', '".$nickname."', '".$email."', '".$gender."', '".$age."')";
 
         $st = $pdo->prepare($query);
-        $st->execute([$id, $nickname, $email, $gender, $age, $birth]);
+        $st->execute([$id, $nickname, $email, $gender, $age]);
         $st = null;
         $pdo = null;
     }

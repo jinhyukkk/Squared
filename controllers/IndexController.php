@@ -32,14 +32,14 @@ try {
         case "naverLogin" :
             http_response_code(200);
 
-            if (!isset($_SERVER['Authorization'])) {
+            if (!isset($req->accessToken)) {
                 $res->isSuccess = FALSE;
-                $res->code = 810;
+                $res->code = 350;
                 $res->message = "accessToken이 없습니다";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             } else {
-                $accessToken = $_SERVER['Authorization'];
+                $accessToken = $req->accessToken;
             }
             $curl = 'curl -v -X GET https://openapi.naver.com/v1/nid/me -H "Authorization: Bearer ' . $accessToken . '"';
             $info = shell_exec($curl);
@@ -47,7 +47,7 @@ try {
 
             if ($info_arr["message"] != "success") {
                 $res->isSuccess = FALSE;
-                $res->code = 700;
+                $res->code = 360;
                 $res->message = "소셜로그인 실패 : " . $info_arr["message"];
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
@@ -58,11 +58,10 @@ try {
             $email = $info_arr["response"]["email"];
             $gender = $info_arr["response"]["gender"];
             $age = $info_arr["response"]["age"];
-            $birth = $info_arr["response"]["birth"];
 
             //존재하는 email 바로 로그인
             if (isEmailExist($email)) {
-                $userIdx = getUserIdxByID($req->userId);  // JWTPdo.php 에 구현
+                $userIdx = getUserIdxByID($id);  // JWTPdo.php 에 구현
                 $jwt = getJWT($userIdx, JWT_SECRET_KEY); // function.php 에 구현
 
                 $res->jwt = $jwt;
@@ -73,8 +72,8 @@ try {
                 break;
             } //          등록하고 로그인
             else {
-                updateUser($id, $nickname, $email, $gender, $age, $birth);
-                $userIdx = getUserIdxByID($req->userId);  // JWTPdo.php 에 구현
+                updateUser($id, $nickname, $email, $gender, $age);
+                $userIdx = getUserIdxByID($id);  // JWTPdo.php 에 구현
                 $jwt = getJWT($userIdx, JWT_SECRET_KEY); // function.php 에 구현
 
                 $res->jwt = $jwt;
