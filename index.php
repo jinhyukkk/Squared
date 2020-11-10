@@ -42,6 +42,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/storage', ['StorageController', 'getStorage']);
     $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['StorageController', 'getStorageDetail']);
     $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['StorageController', 'deleteStorage']);
+    $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/expiration', ['StorageController', 'deleteExpiration']);
     $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
     $r->addRoute('GET', '/recentlyView', ['WebtoonController', 'recentlyView']);
     $r->addRoute('GET', '/recommendation', ['RecommendationController', 'recommendation']);

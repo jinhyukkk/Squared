@@ -74,30 +74,30 @@ try {
                     echo json_encode($res);
                     break;
                 }
-//            if($sort=="view"){
-//                $res->result = getWebtoons_View($category);
-//                $res->isSuccess = TRUE;
-//                $res->code = 100;
-//                $res->message = "웹툰 조회 성공";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-//            if($sort=="male"){
-//                $res->result = getWebtoons_Male($category);
-//                $res->isSuccess = TRUE;
-//                $res->code = 100;
-//                $res->message = "웹툰 조회 성공";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-//            if($sort=="female"){
-//                $res->result = getWebtoons_Female($category);
-//                $res->isSuccess = TRUE;
-//                $res->code = 100;
-//                $res->message = "웹툰 조회 성공";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
+            if($sort=="view"){
+                $res->result = getWebtoons_View($category);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "웹툰 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if($sort=="male"){
+                $res->result = getWebtoons_Male($category);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "웹툰 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if($sort=="female"){
+                $res->result = getWebtoons_Female($category);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "웹툰 조회 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
                 if ($sort == "update") {
                     $res->result = getWebtoons_Update($category);
                     $res->isSuccess = TRUE;

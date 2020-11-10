@@ -276,6 +276,60 @@ try {
             $res->message = "임시저장 삭제 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+        /*
+        * API No. 25
+        * API Name : 임시저장 만료삭제 API
+        * 마지막 수정 날짜 : 20.11.010
+        */
+
+        case "deleteExpiration":
+            http_response_code(200);
+
+            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
+
+            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
+                $res->isSuccess = FALSE;
+                $res->code = 202;
+                $res->message = "유효하지 않은 토큰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
+            $webtoonIdx = $vars['webtoonId'];
+
+            if (!is_numeric($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!isValidStorage($userIdxToken, $webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 310;
+                $res->message = "임시저장하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            deleteExpiration($userIdxToken, $webtoonIdx);
+            $res->result = $webtoonIdx.'번 웹툰의 만료된 웹툰 삭제 완료';
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "임시저장 만료삭제 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 
 
     }

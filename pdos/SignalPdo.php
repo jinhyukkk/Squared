@@ -1,4 +1,63 @@
 <?php
+// CREATE
+//    function addMaintenance($message){
+//        $pdo = pdoSqlConnect();
+//        $query = "INSERT INTO MAINTENANCE (MESSAGE) VALUES (?);";
+//
+//        $st = $pdo->prepare($query);
+//        $st->execute([$message]);
+//
+//        $st = null;
+//        $pdo = null;
+//
+//    }
+// UPDATE
+//    function updateMaintenanceStatus($message, $status, $no){
+//        $pdo = pdoSqlConnect();
+//        $query = "UPDATE MAINTENANCE
+//                        SET MESSAGE = ?,
+//                            STATUS  = ?
+//                        WHERE NO = ?";
+//
+//        $st = $pdo->prepare($query);
+//        $st->execute([$message, $status, $no]);
+//        $st = null;
+//        $pdo = null;
+//    }
+// RETURN BOOLEAN
+//    function isRedundantEmail($email){
+//        $pdo = pdoSqlConnect();
+//        $query = "SELECT EXISTS(SELECT * FROM USER_TB WHERE EMAIL= ?) AS exist;";
+//
+//
+//        $st = $pdo->prepare($query);
+//        //    $st->execute([$param,$param]);
+//        $st->execute([$email]);
+//        $st->setFetchMode(PDO::FETCH_ASSOC);
+//        $res = $st->fetchAll();
+//
+//        $st=null;$pdo = null;
+//
+//        return intval($res[0]["exist"]);
+//
+//    }
+////READ
+//function getUserDetail($userIdx)
+//{
+//    $pdo = pdoSqlConnect();
+//    $query = "select * from Users where userIdx = ?;";
+//
+//    $st = $pdo->prepare($query);
+//    $st->execute([$userIdx]);
+//    //    $st->execute();
+//    $st->setFetchMode(PDO::FETCH_ASSOC);
+//    $res = $st->fetchAll();
+//
+//    $st = null;
+//    $pdo = null;
+//
+//    return $res[0];
+//}
 
 // 존재하는 heart
 function isExistsHeart($userIdxToken, $webtoonIdx, $episodeIdx){
@@ -201,8 +260,9 @@ function getInterested($userIdxToken)
     $query = "select W.webtoonIdx,
        title,
        thumbnailUrl,
-       IF(isnull(E.webtoonIdx), 'N', 'Y')                            as upSign,
-       IF(isnull(N.isDeleted), 'N', if(N.isDeleted = 'N', 'Y', 'N')) as isNotice
+       IF(isnull(E.webtoonIdx), 'N', 'Y')                                                 as upSign,
+       IF(lastUpdate.updatedAt, date_format(lastUpdate.updatedAt, '%y.%c.%d'), '에피소드 없음') as updatedAt,
+       IF(isnull(N.isDeleted), 'N', if(N.isDeleted = 'N', 'Y', 'N'))                      as isNotice
 from Interest I
          join Webtoon W on I.webtoonIdx = W.webtoonIdx
          left outer join Notice N on I.webtoonIdx = N.webtoonIdx
@@ -210,6 +270,8 @@ from Interest I
                           from Episode
                           where DATE(createdAt) = DATE(NOW())
                           group by webtoonIdx) E on E.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, max(updatedAt) updatedAt from Episode group by webtoonIdx) lastUpdate
+                   on lastUpdate.webtoonIdx = I.webtoonIdx
 where I.userIdx = $userIdxToken
   and I.isDeleted = 'N';";
 
