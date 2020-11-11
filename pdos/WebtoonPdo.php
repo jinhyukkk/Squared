@@ -1020,3 +1020,15 @@ where userIdx = $userIdxToken and H.isDeleted = 'N' group by H.webtoonIdx) H";
 
     return $res[0]["count"];
 }
+// 에피소드 등록
+    function postEpisode($webtoonIdx, $episodeIdx, $title, $thumbnailUrl, $words){
+        $pdo = pdoSqlConnect();
+        $query = "INSERT INTO Episode (webtoonIdx, episodeIdx, title, thumbnailUrl, words) VALUES ($webtoonIdx, $episodeIdx, '".$title."', '".$thumbnailUrl."', '".$words."');";
+
+        $st = $pdo->prepare($query);
+        $st->execute([$webtoonIdx, $episodeIdx, $title, $thumbnailUrl, $words]);
+
+        $st = null;
+        $pdo = null;
+
+    }

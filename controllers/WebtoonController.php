@@ -470,6 +470,27 @@ try {
             echo json_encode($res);
             break;
 
+        /*
+        * API No. 24
+        * API Name : 웹툰 등록 API
+        * 마지막 수정 날짜 : 20.11.11
+        */
+
+        case "postEpisode":
+            http_response_code(200);
+
+            $webtoonIdx = $req->webtoonIdx;
+            $episodeIdx = $req->episodeIdx;
+            $title = $req->title;
+            $thumbnailUrl = $req->thumbnailUrl;
+            $words = $req->words;
+
+            postEpisode($webtoonIdx, $episodeIdx, $title, $thumbnailUrl, $words);
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "웹툰 등록 성공";
+            echo json_encode($res);
+            break;
 
     }
 } catch (\Exception $e) {

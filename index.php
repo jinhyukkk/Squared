@@ -49,6 +49,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/recommendation/interested', ['RecommendationController', 'freeRounds']);
     $r->addRoute('GET', '/advertising', ['AdvertisingController', 'advertising']);
     $r->addRoute('GET', '/search', ['SearchController', 'search']);
+    $r->addRoute('POST', '/episode', ['WebtoonController', 'postEpisode']);
 
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
