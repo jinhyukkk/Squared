@@ -322,8 +322,8 @@ try {
 
         /*
         * API No. 9
-        * API Name : 댓글 좋아요 등록/취소 API
-        * 마지막 수정 날짜 : 20.11.04
+        * API Name : 댓글 좋아요, 싫어요 등록/취소 API
+        * 마지막 수정 날짜 : 20.11.11
         */
 
         case "commentLike":
@@ -351,28 +351,65 @@ try {
 
             $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
-            $webtoonIdx = $vars['webtoonId'];
-            $episodeIdx = $vars['episodeId'];
-            $commentIdx = $vars['commentId'];
-
-            if (!is_numeric($webtoonIdx)){
+            if (!isset($req->webtoonId)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
                 $res->message = "존재하지 않은 웹툰입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if (!is_numeric($episodeIdx)){
+            if (!isset($req->episodeId)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
                 $res->message = "존재하지 않은 웹툰입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if (!is_numeric($commentIdx)){
+            if (!isset($req->commentId)){
                 $res->isSuccess = FALSE;
                 $res->code = 260;
                 $res->message = "존재하지 않은 댓글입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $webtoonIdx = $req->webtoonId;
+            $episodeIdx = $req->episodeId;
+            $commentIdx = $req->commentId;
+            $choice = $req->choice;
+
+            if (!is_integer($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_integer($episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_integer($commentIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 260;
+                $res->message = "존재하지 않은 댓글입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_string($choice)){
+                $res->isSuccess = FALSE;
+                $res->code = 410;
+                $res->message = "신호 형식이 옳지 않습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!(($choice=='좋아요') or ($choice=='싫어요'))){
+                $res->isSuccess = FALSE;
+                $res->code = 410;
+                $res->message = "신호 형식이 옳지 않습니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
@@ -397,135 +434,62 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if (isValidCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 280;
-                $res->message = "이미 '싫어요'를 누르셨습니다";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
+            
+            if ($choice=='좋아요'){
+                if (isValidCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                    $res->isSuccess = FALSE;
+                    $res->code = 280;
+                    $res->message = "이미 '싫어요'를 누르셨습니다";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
 
-            if (!isExistsCommentLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
-                registerCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->result = currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "댓글 좋아요 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
+                if (!isExistsCommentLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                    registerCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->result = currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "댓글 좋아요 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else {
+                    modifyCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->result = currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "댓글 좋아요 수정 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
             }
-            else {
-                modifyCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->result = currentCommentLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "댓글 좋아요 수정 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
+            elseif ($choice=='싫어요'){
+                if (isValidCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                    $res->isSuccess = FALSE;
+                    $res->code = 290;
+                    $res->message = "이미 '좋아요'를 누르셨습니다";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
 
-        /*
-        * API No. 10
-        * API Name : 댓글 싫어요 등록/취소 API
-        * 마지막 수정 날짜 : 20.11.04
-        */
-
-        case "commentUnLike":
-            http_response_code(200);
-
-            if (!isset($_SERVER['HTTP_X_ACCESS_TOKEN'])){
-                $res->isSuccess = FALSE;
-                $res->code = 202;
-                $res->message = "유효하지 않은 토큰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                addErrorLogs($errorLogs, $res, $req);
-                return;
-            }
-
-            $jwt = $_SERVER['HTTP_X_ACCESS_TOKEN'];
-
-            if (!isValidJWT($jwt, JWT_SECRET_KEY)) { // function.php 에 구현
-                $res->isSuccess = FALSE;
-                $res->code = 202;
-                $res->message = "유효하지 않은 토큰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                addErrorLogs($errorLogs, $res, $req);
-                return;
-            }
-
-            $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
-
-            $webtoonIdx = $vars['webtoonId'];
-            $episodeIdx = $vars['episodeId'];
-            $commentIdx = $vars['commentId'];
-
-            if (!is_numeric($webtoonIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 240;
-                $res->message = "존재하지 않은 웹툰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            if (!is_numeric($episodeIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 240;
-                $res->message = "존재하지 않은 웹툰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            if (!is_numeric($commentIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 260;
-                $res->message = "존재하지 않은 댓글입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            if (!isValidWebtoon($webtoonIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 240;
-                $res->message = "존재하지 않은 웹툰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            if (!isValidEpisode($webtoonIdx, $episodeIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 240;
-                $res->message = "존재하지 않은 웹툰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            if (!isValidComment($webtoonIdx, $episodeIdx, $commentIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 260;
-                $res->message = "존재하지 않은 댓글입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            if (isValidCommentLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
-                $res->isSuccess = FALSE;
-                $res->code = 290;
-                $res->message = "이미 '좋아요'를 누르셨습니다";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-            if (!isExistsCommentUnLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
-                registerCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->result = currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "댓글 싫어요 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            else {
-                modifyCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->result = currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
-                $res->isSuccess = TRUE;
-                $res->code = 100;
-                $res->message = "댓글 싫어요 수정 성공";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
+                if (!isExistsCommentUnLikeState($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx)){
+                    registerCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->result = currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "댓글 싫어요 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else {
+                    modifyCommentUnLike($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->result = currentCommentUnLikeStatus($userIdxToken, $webtoonIdx, $episodeIdx, $commentIdx);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "댓글 싫어요 수정 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
             }
 
 

@@ -69,7 +69,7 @@ function getWebtoons_Update($keyword)
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')                          as up,
        IF(isnull(CountEpisode.webtoonIdx), 'N', IF(episode < 7, 'Y', 'N')) as new,
        viewType,
@@ -107,7 +107,7 @@ function getWebtoons_Hot($keyword)
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')                          as up,
        IF(isnull(CountEpisode.webtoonIdx), 'N', IF(episode < 7, 'Y', 'N')) as new,
        viewType,
@@ -143,7 +143,7 @@ function getWebtoons_View($keyword)
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')                          as up,
        IF(isnull(CountEpisode.webtoonIdx), 'N', IF(episode < 7, 'Y', 'N')) as new,
        viewType,
@@ -183,7 +183,7 @@ function getWebtoons_Male($keyword)
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')                          as up,
        IF(isnull(CountEpisode.webtoonIdx), 'N', IF(episode < 7, 'Y', 'N')) as new,
        viewType,
@@ -201,7 +201,7 @@ from Webtoon W
          left join (select webtoonIdx, count(H.userIdx) views
                     from History H
                              left join Users U on H.userIdx = U.userIdx
-                        and gender = 'M'
+                        where gender = 'M'
                     group by webtoonIdx) V
                    on W.webtoonIdx = V.webtoonIdx
 where week = ?
@@ -227,7 +227,7 @@ function getWebtoons_Female($keyword)
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')                          as up,
        IF(isnull(CountEpisode.webtoonIdx), 'N', IF(episode < 7, 'Y', 'N')) as new,
        viewType,
@@ -245,7 +245,7 @@ from Webtoon W
          left join (select webtoonIdx, count(H.userIdx) views
                     from History H
                              left join Users U on H.userIdx = U.userIdx
-                        and gender = 'F'
+                        where gender = 'F'
                     group by webtoonIdx) V
                    on W.webtoonIdx = V.webtoonIdx
 where week = ?
@@ -271,7 +271,7 @@ function finishedWebtoons_Hot()
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        viewType,
        IF(rate = 19, 'Y', 'N')                                             as adult,
        every24
@@ -279,6 +279,108 @@ from Webtoon
          left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
                          on StarGrade.webtoonIdx = Webtoon.webtoonIdx
 where complete='Y' and Webtoon.isDeleted = 'N' order by grade desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//완결웹툰 조회순
+function finishedWebtoons_View()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select W.webtoonIdx,
+       thumbnailUrl,
+       title,
+       creator,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
+       viewType,
+       IF(rate = 19, 'Y', 'N')                                             as adult,
+       every24
+from Webtoon W
+         left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
+                         on StarGrade.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, count(userIdx) views from History group by webtoonIdx) V
+                   on W.webtoonIdx = V.webtoonIdx
+where complete='Y' and W.isDeleted = 'N' order by V.views desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//완결웹툰 남성 조회순
+function finishedWebtoons_Male()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select W.webtoonIdx,
+       thumbnailUrl,
+       title,
+       creator,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
+       viewType,
+       IF(rate = 19, 'Y', 'N')                              as adult,
+       every24
+from Webtoon W
+         left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
+                         on StarGrade.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, count(H.userIdx) views
+                    from History H
+                             left join Users U on H.userIdx = U.userIdx
+                    where gender = 'M'
+                    group by webtoonIdx) V
+                   on W.webtoonIdx = V.webtoonIdx
+where complete = 'Y'
+  and W.isDeleted = 'N'
+order by V.views desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//완결웹툰 여성 조회순
+function finishedWebtoons_Female()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select W.webtoonIdx,
+       thumbnailUrl,
+       title,
+       creator,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
+       viewType,
+       IF(rate = 19, 'Y', 'N')                              as adult,
+       every24
+from Webtoon W
+         left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
+                         on StarGrade.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, count(H.userIdx) views
+                    from History H
+                             left join Users U on H.userIdx = U.userIdx
+                    where gender = 'F'
+                    group by webtoonIdx) V
+                   on W.webtoonIdx = V.webtoonIdx
+where complete = 'Y'
+  and W.isDeleted = 'N'
+order by V.views desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -299,7 +401,7 @@ function finishedWebtoons_Update()
        thumbnailUrl,
        title,
        creator,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade)                     as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade)                     as star,
        viewType,
        IF(rate = 19, 'Y', 'N')                                             as adult,
        every24
@@ -339,7 +441,7 @@ function newWebtoons_Hot()
            when week = 'fri' then '금'
            when week = 'sat' then '토'
            when week = 'sun' then '일' end              as week,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade) as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')      as up,
        viewType,
        IF(rate = 19, 'Y', 'N')                         as adult,
@@ -353,7 +455,160 @@ from Webtoon
                           group by webtoonIdx) nowUpdate on nowUpdate.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select webtoonIdx, count(episodeIdx) as episode from Episode group by webtoonIdx) CountEpisode
                          on CountEpisode.webtoonIdx = Webtoon.webtoonIdx
-where (isnull(CountEpisode.webtoonIdx) or episode < 7) and Webtoon.isDeleted = 'N' order by grade desc;";
+where (isnull(CountEpisode.webtoonIdx) or episode < 7) and Webtoon.isDeleted = 'N' and Webtoon.complete = 'N' order by grade desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//신작 웹툰 조회순
+function newWebtoons_View()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select W.webtoonIdx,
+       thumbnailUrl,
+       title,
+       creator,
+       case
+           when isnull(week) then '요일정보 없음'
+           when week = 'mon' then '월'
+           when week = 'tue' then '화'
+           when week = 'wed' then '수'
+           when week = 'thur' then '목'
+           when week = 'fri' then '금'
+           when week = 'sat' then '토'
+           when week = 'sun' then '일' end              as week,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
+       IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')      as up,
+       viewType,
+       IF(rate = 19, 'Y', 'N')                         as adult,
+       rest
+from Webtoon W
+         left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
+                         on StarGrade.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx
+                          from Episode
+                          where DATE(createdAt) = DATE(NOW())
+                          group by webtoonIdx) nowUpdate on nowUpdate.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx, count(episodeIdx) as episode from Episode group by webtoonIdx) CountEpisode
+                         on CountEpisode.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, count(userIdx) views from History group by webtoonIdx) V
+                   on W.webtoonIdx = V.webtoonIdx
+where (isnull(CountEpisode.webtoonIdx) or episode < 7) and W.isDeleted = 'N' and W.complete = 'N'
+order by V.views desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//신작 웹툰 남성 인기순
+function newWebtoons_Male()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select W.webtoonIdx,
+       thumbnailUrl,
+       title,
+       creator,
+       case
+           when isnull(week) then '요일정보 없음'
+           when week = 'mon' then '월'
+           when week = 'tue' then '화'
+           when week = 'wed' then '수'
+           when week = 'thur' then '목'
+           when week = 'fri' then '금'
+           when week = 'sat' then '토'
+           when week = 'sun' then '일' end              as week,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
+       IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')      as up,
+       viewType,
+       IF(rate = 19, 'Y', 'N')                         as adult,
+       rest
+from Webtoon W
+         left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
+                         on StarGrade.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx
+                          from Episode
+                          where DATE(createdAt) = DATE(NOW())
+                          group by webtoonIdx) nowUpdate on nowUpdate.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx, count(episodeIdx) as episode from Episode group by webtoonIdx) CountEpisode
+                         on CountEpisode.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, count(H.userIdx) views
+                    from History H
+                             left join Users U on H.userIdx = U.userIdx
+                        where gender = 'M'
+                    group by webtoonIdx) V
+                   on W.webtoonIdx = V.webtoonIdx
+where (isnull(CountEpisode.webtoonIdx) or episode < 7)
+  and W.isDeleted = 'N'
+  and W.complete = 'N'
+order by V.views desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//신작 웹툰 여성 인기순
+function newWebtoons_Female()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select W.webtoonIdx,
+       thumbnailUrl,
+       title,
+       creator,
+       case
+           when isnull(week) then '요일정보 없음'
+           when week = 'mon' then '월'
+           when week = 'tue' then '화'
+           when week = 'wed' then '수'
+           when week = 'thur' then '목'
+           when week = 'fri' then '금'
+           when week = 'sat' then '토'
+           when week = 'sun' then '일' end              as week,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
+       IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')      as up,
+       viewType,
+       IF(rate = 19, 'Y', 'N')                         as adult,
+       rest
+from Webtoon W
+         left outer join (select webtoonIdx, format(AVG(grade), 2) as grade from Star group by webtoonIdx) StarGrade
+                         on StarGrade.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx
+                          from Episode
+                          where DATE(createdAt) = DATE(NOW())
+                          group by webtoonIdx) nowUpdate on nowUpdate.webtoonIdx = W.webtoonIdx
+         left outer join (select webtoonIdx, count(episodeIdx) as episode from Episode group by webtoonIdx) CountEpisode
+                         on CountEpisode.webtoonIdx = W.webtoonIdx
+         left join (select webtoonIdx, count(H.userIdx) views
+                    from History H
+                             left join Users U on H.userIdx = U.userIdx
+                        where gender = 'F'
+                    group by webtoonIdx) V
+                   on W.webtoonIdx = V.webtoonIdx
+where (isnull(CountEpisode.webtoonIdx) or episode < 7)
+  and W.isDeleted = 'N'
+  and W.complete = 'N'
+order by V.views desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -383,7 +638,7 @@ function newWebtoons_Update()
            when week = 'fri' then '금'
            when week = 'sat' then '토'
            when week = 'sun' then '일' end              as week,
-       IF(isnull(StarGrade.grade), 0, StarGrade.grade) as star,
+       IF(isnull(StarGrade.grade), '0.00', StarGrade.grade) as star,
        IF(isnull(nowUpdate.webtoonIdx), 'N', 'Y')      as up,
        viewType,
        IF(rate = 19, 'Y', 'N')                         as adult,
@@ -399,7 +654,7 @@ from Webtoon
                          on CountEpisode.webtoonIdx = Webtoon.webtoonIdx
          left outer join (select max(updatedAt) as recent, webtoonIdx from Episode group by webtoonIdx) recentUpdate
                          on recentUpdate.webtoonIdx = Webtoon.webtoonIdx
-where (isnull(CountEpisode.webtoonIdx) or episode < 7) and Webtoon.isDeleted = 'N' order by recentUpdate.recent desc;";
+where (isnull(CountEpisode.webtoonIdx) or episode < 7) and Webtoon.isDeleted = 'N' and Webtoon.complete = 'N' order by recentUpdate.recent desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -432,7 +687,7 @@ function isValidWebtoon($webtoonId)
     return $res[0]['exist'];
 }
 
-//웹툰 상세조회
+//웹툰 상세조회 - 회원용
 function getWebtoonDetail($webtoonIdx, $userIdxToken)
 {
     $pdo = pdoSqlConnect();
@@ -467,7 +722,7 @@ where webtoonIdx = $webtoonIdx and Webtoon.isDeleted = 'N';";
     return $res[0];
 }
 
-//웹툰 리스트 상세조회
+//웹툰 리스트 상세조회 - 회원용
 function getWebtoonList($webtoonIdx, $userIdxToken)
 {
     $pdo = pdoSqlConnect();
@@ -479,18 +734,88 @@ function getWebtoonList($webtoonIdx, $userIdxToken)
        date_format(Episode.updatedAt, '%y.%c.%d')                      as updatedDate,
        IF(isnull(music), 'N', 'Y')                                     as music,
        IF(S.createdAt, IF(timediff(DATE_ADD(S.createdAt, INTERVAL 48 HOUR), now()) < 0, '저장기간만료', '임시저장됨'),
-          '표시안함')                                                      as isSaved
+          '표시안함')                                                      as isSaved,
+       IF(H.episodeIdx, 'Y', 'N')                                     as isSaw
 from Episode
          left outer join (select webtoonIdx, episodeIdx, format(AVG(grade), 2) as grade
                           from Star
                           group by episodeIdx) StarGrade
                          on StarGrade.episodeIdx = Episode.episodeIdx
-         left outer join (select * from Storage where userIdx = $userIdxToken) S on Episode.episodeIdx = S.episodeIdx
-where Episode.webtoonIdx = $webtoonIdx order by episodeIdx desc;";
+         left outer join (select * from Storage where userIdx = $userIdxToken and isDeleted = 'N') S on Episode.episodeIdx = S.episodeIdx
+         left join (select * from History where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx) H on Episode.episodeIdx = H.episodeIdx
+where Episode.webtoonIdx = $webtoonIdx
+order by episodeIdx desc;";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
     $st->execute([$webtoonIdx, $userIdxToken]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+//웹툰 상세조회 - 비회원용
+function getWebtoonDetailNonMember($webtoonIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select subThumbnailUrl,
+       color,
+       title,
+       creator,
+       case
+           when isnull(week) then '요일정보 없음'
+           when week = 'mon' then '월요웹툰'
+           when week = 'tue' then '화요웹툰'
+           when week = 'wed' then '수요웹툰'
+           when week = 'thur' then '목요웹툰'
+           when week = 'fri' then '금요웹툰'
+           when week = 'sat' then '토요웹툰'
+           when week = 'sun' then '일요웹툰' end as week,
+       summary,
+       'N' as isInterested,
+       'N' as Notice
+from Webtoon
+where webtoonIdx = $webtoonIdx and Webtoon.isDeleted = 'N';";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$webtoonIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
+
+//웹툰 리스트 상세조회 - 비회원용
+function getWebtoonListNonMember($webtoonIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select Episode.episodeIdx,
+       thumbnailUrl,
+       title,
+       IF(DATE(Episode.createdAt) = DATE(NOW()), 'Y', 'N')             as up,
+       IF(isnull(StarGrade.grade), '0.00', format(StarGrade.grade, 2)) as star,
+       date_format(Episode.updatedAt, '%y.%c.%d')                      as updatedDate,
+       IF(isnull(music), 'N', 'Y')                                     as music,
+       '표시안함'                                                      as isSaved,
+       'N'                                     as isSaw
+from Episode
+         left outer join (select webtoonIdx, episodeIdx, format(AVG(grade), 2) as grade
+                          from Star
+                          group by episodeIdx) StarGrade
+                         on StarGrade.episodeIdx = Episode.episodeIdx
+where Episode.webtoonIdx = $webtoonIdx
+order by episodeIdx desc;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$webtoonIdx]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 

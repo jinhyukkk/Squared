@@ -55,17 +55,14 @@ try {
 
             $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
-            $webtoonIdx = $vars['webtoonId'];
-            $episodeIdx = $vars['episodeId'];
-
-            if (!is_numeric($webtoonIdx)){
+            if (!isset($req->webtoonId)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
                 $res->message = "존재하지 않은 웹툰입니다.";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-            if (!is_numeric($episodeIdx)){
+            if (!isset($req->episodeId)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
                 $res->message = "존재하지 않은 웹툰입니다.";
@@ -73,6 +70,23 @@ try {
                 break;
             }
 
+            $webtoonIdx = $req->webtoonId;
+            $episodeIdx = $req->episodeId;
+
+            if (!is_integer($webtoonIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+            if (!is_integer($episodeIdx)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
             if (!isValidWebtoon($webtoonIdx)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
@@ -87,7 +101,6 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
-
 
             if (!isExistsHeart($userIdxToken, $webtoonIdx, $episodeIdx)){
                 registerHeart($userIdxToken, $webtoonIdx, $episodeIdx);
@@ -137,9 +150,17 @@ try {
 
             $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
-            $webtoonIdx = $vars['webtoonId'];
+            if (!isset($req->webtoonId)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
 
-            if (!is_numeric($webtoonIdx)){
+            $webtoonIdx = $req->webtoonId;
+
+            if (!is_integer($webtoonIdx)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
                 $res->message = "존재하지 않은 웹툰입니다.";
@@ -203,9 +224,18 @@ try {
 
             $userIdxToken = getDataByJWToken($jwt, JWT_SECRET_KEY)->userIdx;
 
-            $webtoonIdx = $vars['webtoonId'];
 
-            if (!is_numeric($webtoonIdx)){
+            if (!isset($req->webtoonId)){
+                $res->isSuccess = FALSE;
+                $res->code = 240;
+                $res->message = "존재하지 않은 웹툰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $webtoonIdx = $req->webtoonId;
+
+            if (!is_integer($webtoonIdx)){
                 $res->isSuccess = FALSE;
                 $res->code = 240;
                 $res->message = "존재하지 않은 웹툰입니다.";

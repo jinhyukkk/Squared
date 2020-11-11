@@ -33,18 +33,17 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/comment', ['CommentController', 'postComment']);
     $r->addRoute('GET', '/comment', ['CommentController', 'getComment']);
     $r->addRoute('DELETE', '/comment', ['CommentController', 'deleteComment']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/like', ['CommentController', 'commentLike']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/comment/{commentId}/unLike', ['CommentController', 'commentUnLike']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/episode/{episodeId}/heart', ['SignalController', 'episodeHeart']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/interest', ['SignalController', 'registInterest']);
-    $r->addRoute('POST', '/webtoon/{webtoonId}/notice', ['SignalController', 'registNotice']);
+    $r->addRoute('POST', '/like', ['CommentController', 'commentLike']);
+    $r->addRoute('POST', '/heart', ['SignalController', 'episodeHeart']);
+    $r->addRoute('POST', '/interest', ['SignalController', 'registInterest']);
+    $r->addRoute('POST', '/notice', ['SignalController', 'registNotice']);
     $r->addRoute('POST', '/storage', ['StorageController', 'registerStorage']);
     $r->addRoute('GET', '/storage', ['StorageController', 'getStorage']);
     $r->addRoute('GET', '/storage/webtoon/{webtoonId}', ['StorageController', 'getStorageDetail']);
     $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/episode/{episodeId}', ['StorageController', 'deleteStorage']);
     $r->addRoute('DELETE', '/storage/webtoon/{webtoonId}/expiration', ['StorageController', 'deleteExpiration']);
     $r->addRoute('GET', '/interested', ['SignalController', 'getInterested']);
-    $r->addRoute('GET', '/recentlyView', ['WebtoonController', 'recentlyView']);
+    $r->addRoute('GET', '/recently-view', ['WebtoonController', 'recentlyView']);
     $r->addRoute('GET', '/recommendation', ['RecommendationController', 'recommendation']);
     $r->addRoute('GET', '/recommendation/top10', ['RecommendationController', 'top10']);
     $r->addRoute('GET', '/recommendation/interested', ['RecommendationController', 'freeRounds']);
@@ -57,8 +56,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     /* ******************   JWT   ****************** */
     $r->addRoute('POST', '/jwt', ['JWTController', 'createJwt']);   // JWT 생성: 로그인
-    $r->addRoute('POST', '/autoLogin', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
-    $r->addRoute('POST', '/naverLogin', ['IndexController', 'naverLogin']);
+    $r->addRoute('POST', '/auto-login', ['JWTController', 'validateJwt']);  // JWT 유효성 검사
+    $r->addRoute('POST', '/naver-login', ['IndexController', 'naverLogin']);
 
 
 
