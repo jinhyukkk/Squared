@@ -51,6 +51,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/search', ['SearchController', 'search']);
     $r->addRoute('POST', '/episode', ['WebtoonController', 'postEpisode']);
 
+    $r->addRoute('POST', '/payment', ['PaymentController', 'payment']);
+
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);
 //    $r->addRoute('POST', '/user', ['IndexController', 'createUser']); // 비밀번호 해싱 예시 추가
@@ -145,6 +147,10 @@ switch ($routeInfo[0]) {
             case 'SearchController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/SearchController.php';
+                break;
+            case 'PaymentController':
+                $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
+                require './controllers/PaymentController.php';
                 break;
 
         }

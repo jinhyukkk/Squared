@@ -1032,3 +1032,50 @@ where userIdx = $userIdxToken and H.isDeleted = 'N' group by H.webtoonIdx) H";
         $pdo = null;
 
     }
+//FCM
+function send_notification ($tokens, $message)
+{
+    $url = 'https://fcm.googleapis.com/fcm/send';
+    $fields = array(
+        'registration_ids' => $tokens,
+        'data' => $message
+    );
+    $key = "AAAA2fAMhU0:APA91bFSj2HtVQPQdY3zR2N-tDxa6LRthCfMvjLr-u_25-5l9pbhkawCz_o0A1YEufYqIFOEuCLGGXH-3ka8nC9bwBja6FLFw2iOQLBEMv3kAUbBvSf9Tw7kBisBjVJQ_cozdJe-RJlz";
+    $headers = array(
+        'Authorization:key =' . $key,
+        'Content-Type: application/json'
+    );
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+    $result = curl_exec($ch);
+    if ($result === FALSE) {
+        die('Curl failed: ' . curl_error($ch));
+    }
+    curl_close($ch);
+    return $result;
+}
+
+//READ
+function getNoticeUser($webtoonIdx)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select concat(userIdx, '번 유저에게 메세지 전송') massage from Notice where webtoonIdx = $webtoonIdx;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$webtoonIdx]);
+    //    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}

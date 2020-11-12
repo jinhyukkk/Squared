@@ -479,18 +479,127 @@ try {
         case "postEpisode":
             http_response_code(200);
 
+//            $ch = curl_init("https://fcm.googleapis.com/fcm/send");
+//            $header = array("Content-Type:application/json",
+//                "Authorization:key=AAAA2fAMhU0:APA91bFSj2HtVQPQdY3zR2N-tDxa6LRthCfMvjLr-u_25-5l9pbhkawCz_o0A1YEufYqIFOEuCLGGXH-3ka8nC9bwBja6FLFw2iOQLBEMv3kAUbBvSf9Tw7kBisBjVJQ_cozdJe-RJlz");
+//            $data = json_encode(array(
+//                "to" => "핸드폰 or 에뮬로 실행하고 로그에 나온 장문의 토큰 문자열",
+//                "notification" => array(
+//                    "title"   => '웹툰 등록',
+//                    "message" => "새로운 웹툰이 추가 되었어요!")
+//            ));
+//            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+//            curl_setopt($ch, CURLOPT_POST, 1);
+//            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+//            curl_exec($ch);
+
+
+
+//            $tokens = array();
+//            $tokens[0] = 'token1';
+//            $tokens[1] = 'token2';
+//
+//// 헤더 부분
+//            $key = "AAAA2fAMhU0:APA91bFSj2HtVQPQdY3zR2N-tDxa6LRthCfMvjLr-u_25-5l9pbhkawCz_o0A1YEufYqIFOEuCLGGXH-3ka8nC9bwBja6FLFw2iOQLBEMv3kAUbBvSf9Tw7kBisBjVJQ_cozdJe-RJlz";
+//            $headers = array(
+//                'Content-Type:application/json',
+//                'Authorization:key='.$key
+//            );
+//
+////// 발송 내용
+////            $arr   = array();
+////            $arr['notification'] = array();
+////            $arr['notification']['title'] = '제목';
+////            $arr['notification']['body'] = '내용';
+////            $arr['notification']['sound'] = 'default';
+////            $arr['notification']['badge'] = '1';
+////            $arr['notification']['tag'] = '1';  // 개별로 보낼때 이름을 다르게
+////            $arr['notification']['priority'] = 'high';  // 안드로이드 8이상 추가
+////            $arr['notification']['content_available'] = true;  // 안드로이드 8이상 추가
+//
+//            $arr['data'] = array();
+//            $arr['data']['message'] = '새로운 웹툰이 나왔어요!'; // 내부에서 받을 시
+//
+//            $arr['registration_ids'] = array();
+//            $arr['registration_ids'] = $tokens;
+//
+//            $ch = curl_init();
+//            curl_setopt($ch, CURLOPT_URL,    'https://fcm.googleapis.com/fcm/send');
+//            curl_setopt($ch, CURLOPT_POST, true);
+//            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+//            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+//            curl_setopt($ch, CURLOPT_POSTFIELDS,json_encode($arr));
+//            $response = curl_exec($ch);
+//            curl_close($ch);
+//
+//// 푸쉬 전송에 대한 결과를 수신
+//            $obj = json_decode($response);
+//
+//// 전송 성공 및 실패한 갯수
+//            $suc_cnt = $obj->success;
+//            $fail_cnt = $obj->failure;
+//
+//            echo $suc_cnt.' --- '.$fail_cnt;
+
+
+
+            $tokens = array();
+            $tokens[0] = "디바이스 토큰을 여기다 넣으세요";
+
+
+            $myMessage = "Message Test";
+            if ($myMessage == ""){
+                $myMessage = "Newly registered.";
+            }
+
+            $message = array("message" => $myMessage);
+
+            $url = 'https://fcm.googleapis.com/fcm/send';
+            $fields = array(
+                'registration_ids' => $tokens,
+                'data' => $message
+            );
+            $key = "AAAA2fAMhU0:APA91bFSj2HtVQPQdY3zR2N-tDxa6LRthCfMvjLr-u_25-5l9pbhkawCz_o0A1YEufYqIFOEuCLGGXH-3ka8nC9bwBja6FLFw2iOQLBEMv3kAUbBvSf9Tw7kBisBjVJQ_cozdJe-RJlz";
+            $headers = array(
+                'Authorization:key =' . $key,
+                'Content-Type: application/json'
+            );
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+            $result = curl_exec($ch);
+
+            if ($result === FALSE) {
+                die('Curl failed: ' . curl_error($ch));
+            }
+            curl_close($ch);
+            echo $result;
+//            $message_status = send_notification($tokens, $message);
+//            echo $message_status;
+
             $webtoonIdx = $req->webtoonIdx;
             $episodeIdx = $req->episodeIdx;
             $title = $req->title;
             $thumbnailUrl = $req->thumbnailUrl;
             $words = $req->words;
 
+            $res->result = getNoticeUser($webtoonIdx);
             postEpisode($webtoonIdx, $episodeIdx, $title, $thumbnailUrl, $words);
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "웹툰 등록 성공";
             echo json_encode($res);
             break;
+
 
     }
 } catch (\Exception $e) {
