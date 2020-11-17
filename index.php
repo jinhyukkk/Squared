@@ -10,6 +10,7 @@ require './pdos/JWTPdo.php';
 require './pdos/RecommendationPdo.php';
 require './pdos/AdvertisingPdo.php';
 require './pdos/SearchPdo.php';
+require './pdos/PaymentPdo.php';
 require './vendor/autoload.php';
 
 use \Monolog\Logger as Logger;
@@ -51,7 +52,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/search', ['SearchController', 'search']);
     $r->addRoute('POST', '/episode', ['WebtoonController', 'postEpisode']);
 
-    $r->addRoute('POST', '/payment', ['PaymentController', 'payment']);
+    $r->addRoute('GET', '/payment', ['PaymentController', 'payment']);
 
 
 //    $r->addRoute('GET', '/users/{userIdx}', ['IndexController', 'getUserDetail']);

@@ -32,33 +32,59 @@ try {
         case "payment" :
             http_response_code(200);
 
-            require_once('../autoload.php');
-            spl_autoload_register('BootpayAutoload');
+//            require_once('../autoload.php');
+//            spl_autoload_register('BootpayAutoload');
+//
+//            use Bootpay\Rest\BootpayApi;
+//
+//            $receiptId = '[[ receipt_id ]]';
+//
+//            $bootpay = BootpayApi::setConfig(
+//                "5face2878f075100207ddc6e",
+//                "tdKsHWqxQbIpJVU/t+rH8BD6TFDgkKC93behWKhoQJA="
+//            );
+//
+//            $response = $bootpay->requestAccessToken();
+//
+//// Token이 발행되면 그 이후에 verify 처리 한다.
+//            if ($response->status === 200) {
+//                $result = $bootpay->verify($receiptId);
+//                // 원래 주문했던 금액이 일치하는가?
+//                // 그리고 결제 상태가 완료 상태인가?
+//                if ($result->data->price === price && $result->data->status === 1) {
+//                    // TODO: 이곳이 상품 지급 혹은 결제 완료 처리를 하는 로직으로 사용하면 됩니다.
+//                }
+//            }
 
-            use Bootpay\Rest\BootpayApi;
-
-            $receiptId = '[[ receipt_id ]]';
-
-            $bootpay = BootpayApi::setConfig(
-                "5face2878f075100207ddc6e",
-                "tdKsHWqxQbIpJVU/t+rH8BD6TFDgkKC93behWKhoQJA="
+            $headers = array(
+                '{"application_id": "5face2878f075100207ddc6e", "private_key": "tdKsHWqxQbIpJVU/t+rH8BD6TFDgkKC93behWKhoQJA="}',
+                'Content-Type: application/json'
             );
 
-            $response = $bootpay->requestAccessToken();
+            $url = "https://api.bootpay.co.kr/request/token";
 
-// Token이 발행되면 그 이후에 verify 처리 한다.
-            if ($response->status === 200) {
-                $result = $bootpay->verify($receiptId);
-                // 원래 주문했던 금액이 일치하는가?
-                // 그리고 결제 상태가 완료 상태인가?
-                if ($result->data->price === price && $result->data->status === 1) {
-                    // TODO: 이곳이 상품 지급 혹은 결제 완료 처리를 하는 로직으로 사용하면 됩니다.
-                }
-            }
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $result = curl_exec($ch);
+            curl_close($ch);
+            echo $result;
 
-//            $curl = "-X POST https://api.bootpay.co.kr/request/token";
-//                curl -H "Content-Type: application/json" \
-//            -d '{"application_id": "5face2878f075100207ddc6e", "private_key": "tdKsHWqxQbIpJVU/t+rH8BD6TFDgkKC93behWKhoQJA="}' \
+
+//            $curl = 'curl -X GET https://api.bootpay.co.kr/request/token -H "Content-Type: application/json"
+//            -d "{"application_id": "5face2878f075100207ddc6e", "private_key": "tdKsHWqxQbIpJVU/t+rH8BD6TFDgkKC93behWKhoQJA="}"';
+//            $info = shell_exec($curl);
+//            $res->info = $info;
+
+//            $res->info = post($url, array(
+//                '"application_id": "5face2878f075100207ddc6b", "private_key": "tdKsHWqxQbIpJVU/t+rH8BD6TFDgkKC93behWKhoQJA="',
+//                'Content-Type: application/json'
+//            ));
+//            echo json_encode($res, JSON_NUMERIC_CHECK);
 
 
     }

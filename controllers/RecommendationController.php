@@ -148,6 +148,15 @@ try {
         case "top10":
             http_response_code(200);
 
+            if (!isset($_GET['choice'])){
+                $res->isSuccess = FALSE;
+                $res->code = 320;
+                $res->message = "존재하지 않은 TOP10 정보입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
             $choice = $_GET['choice'];
 
             if (!(($choice=="best")

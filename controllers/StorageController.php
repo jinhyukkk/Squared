@@ -88,13 +88,32 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
+            if (isExistStorage($userIdxToken, $webtoonIdx, $episodeIdx)){
+                if(isExistStorage($userIdxToken, $webtoonIdx, $episodeIdx)){
+                    $res->isSuccess = FALSE;
+                    $res->code = 240;
+                    $res->message = "이미 임시저장한 웹툰입니다.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+                else{
+                    modifyStorage($userIdxToken, $webtoonIdx, $episodeIdx);
+                    $res->isSuccess = TRUE;
+                    $res->code = 100;
+                    $res->message = "임시저장 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
+            else{
+                registerStorage($userIdxToken, $webtoonIdx, $episodeIdx);
+                $res->isSuccess = TRUE;
+                $res->code = 100;
+                $res->message = "임시저장 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
 
-            registerStorage($userIdxToken, $webtoonIdx, $episodeIdx);
-            $res->isSuccess = TRUE;
-            $res->code = 100;
-            $res->message = "임시저장 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
-            break;
 
         /*
         * API No. 15

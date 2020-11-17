@@ -72,13 +72,26 @@ function registerStorage($userIdxToken, $webtoonIdx, $episodeIdx){
 
 }
 
+// 임시저장 수정
+function modifyStorage($userIdxToken, $webtoonIdx, $episodeIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Storage
+                        SET isDeleted = 'N'
+                        WHERE userIdx = $userIdxToken and webtoonIdx = $webtoonIdx and episodeIdx = $episodeIdx";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+    $st = null;
+    $pdo = null;
+}
+
 //임시저장 조회
 function getStorage($userIdxToken){
     $pdo = pdoSqlConnect();
     $query = "select distinct W.webtoonIdx, W.title, W.thumbnailUrl, W.creator
     from Storage
     left outer join Webtoon W on W.webtoonIdx = Storage.webtoonIdx
-    where userIdx = $userIdxToken and W.isDeleted = 'N';";
+    where userIdx = $userIdxToken and W.isDeleted = 'N' and Storage.isDeleted = 'N';";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -99,7 +112,7 @@ function getStorageCount($userIdxToken){
     from (select distinct W.webtoonIdx, W.title, W.thumbnailUrl, W.creator
     from Storage
     left outer join Webtoon W on W.webtoonIdx = Storage.webtoonIdx
-    where userIdx = $userIdxToken and W.isDeleted = 'N') S";
+    where userIdx = $userIdxToken and W.isDeleted = 'N' and Storage.isDeleted = 'N') S";
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
@@ -134,6 +147,44 @@ function getWebtoonTitle($userIdxToken, $webtoonIdx){
     return $res[0]['title'];
 }
 // 존재하는 임시저장
+function isExistStorage($userIdxToken, $webtoonIdx, $episodeIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from Storage where userIdx = $userIdxToken 
+                                                    and webtoonIdx = $webtoonIdx 
+                                                    and episodeIdx = $episodeIdx) AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+// 존재하는 임시저장
+function isDeletedExistStorage($userIdxToken, $webtoonIdx, $episodeIdx){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(select * from Storage where userIdx = $userIdxToken 
+                                                    and webtoonIdx = $webtoonIdx 
+                                                    and episodeIdx = $episodeIdx
+                                                    and isDeleted = 'N') AS exist;";
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userIdxToken, $webtoonIdx, $episodeIdx]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;$pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+
+// 존재하는 임시저장
 function isValidStorage($userIdxToken, $webtoonIdx){
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS(select * from Storage where userIdx = $userIdxToken and webtoonIdx = $webtoonIdx and isDeleted = 'N') AS exist;";
@@ -156,11 +207,11 @@ function getStorageDetail($userIdxToken, $webtoonIdx){
     $query = "select S.episodeIdx,
     E.title,
     E.thumbnailUrl,
-    IF(timediff(DATE_ADD(S.createdAt, INTERVAL 48 HOUR), now()) < 0, '저장기간만료',
-    concat('만료 ', substring(timediff(DATE_ADD(S.createdAt, INTERVAL 48 HOUR), now()), 1, 2), '시간 ',
-    substring(timediff(DATE_ADD(S.createdAt, INTERVAL 48 HOUR), now()), 4, 2), '분 남음')) as expirationTime
+    IF(timediff(DATE_ADD(S.updatedAt, INTERVAL 48 HOUR), now()) < 0, '저장기간만료',
+    concat('만료 ', substring(timediff(DATE_ADD(S.updatedAt, INTERVAL 48 HOUR), now()), 1, 2), '시간 ',
+    substring(timediff(DATE_ADD(S.updatedAt, INTERVAL 48 HOUR), now()), 4, 2), '분 남음')) as expirationTime
     from Storage S
-    join Episode E on S.episodeIdx = E.episodeIdx
+    left join (select * from Episode where webtoonIdx=$webtoonIdx) E on S.episodeIdx = E.episodeIdx
     where S.userIdx = $userIdxToken
     and S.webtoonIdx = $webtoonIdx
     and S.isDeleted = 'N'
@@ -205,33 +256,17 @@ function deleteStorage($userIdxToken, $webtoonIdx, $episodeIdx){
     $pdo = null;
 }
 // 임시저장 만료삭제
-    function deleteExpiration($userIdxToken, $webtoonIdx){
-        $pdo = pdoSqlConnect();
-        $query = "UPDATE Storage S
+function deleteExpiration($userIdxToken, $webtoonIdx){
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE Storage S
 SET isDeleted='Y'
 WHERE userIdx = $userIdxToken
   and webtoonIdx = $webtoonIdx
   and isDeleted = 'N'
-  and timediff(DATE_ADD(S.createdAt, INTERVAL 48 HOUR), now()) < 0";
-
-        $st = $pdo->prepare($query);
-        $st->execute([$userIdxToken, $webtoonIdx]);
-        $st = null;
-        $pdo = null;
-    }
-// 삭제된 만료웹툰
-function getDeleteWebtoon($userIdxToken, $webtoonIdx){
-    $pdo = pdoSqlConnect();
-    $query = "";
+  and timediff(DATE_ADD(S.updatedAt, INTERVAL 48 HOUR), now()) < 0";
 
     $st = $pdo->prepare($query);
-    //    $st->execute([$param,$param]);
     $st->execute([$userIdxToken, $webtoonIdx]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
-    $st=null;$pdo = null;
-
-    return intval($res[0]["exist"]);
-
+    $st = null;
+    $pdo = null;
 }
