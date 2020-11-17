@@ -35,4 +35,4 @@ POST | /episode	|	에피소드 추가 API
 
 <img>
 
-![naver ERD](C:\Users\JINHYUK\Desktop\SERVER\Webtoon_DB.png)
+![naver ERD](\var\www\html\Webtoon_DB.png)
