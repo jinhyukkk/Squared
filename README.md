@@ -28,3 +28,5 @@ GET	|	/advertising	|	광고 API
 GET	|	/search	|	검색 API
 DELETE | /storage/webtoon/{webtoonId}/expiration | 임시저장 만료삭제 API
 POST | /episode	|	에피소드 추가 API
+
+[API 세부사항](https://docs.google.com/spreadsheets/d/1Ifr5lFcicAidx20cEwg2Y7GcAnDIB3aSNQcodSrrzLE/edit?usp=sharing)
