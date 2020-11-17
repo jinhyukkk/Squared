@@ -1,6 +1,10 @@
-GET	/webtoon	웹툰 조회API
+<table>
+  
+Method | URI | Description 
+  |---|:---:|---:|
+GET	| /webtoon | 웹툰 조회API
 
-GET	/webtoon/{webtoonId}	웹툰 상세 조회 API
+GET	|	/webtoon/{webtoonId | 웹툰 상세 조회 API
 
 GET	/webtoon/{webtoonId}/episode/{episodeId}	웹툰 회차별 상세조회 API
 
